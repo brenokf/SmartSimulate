@@ -46,12 +46,57 @@ import {
 } from 'lucide-react';
 
 // Constantes de atualização e API
-const CACHE_DURATION = 15 * 60 * 1000; // 15 minutos (usado apenas sem API key)
-const REFRESH_INTERVAL = 60 * 1000; // 1 minuto
+const CACHE_DURATION = 15 * 60 * 1000; // 15 minutos
+const REFRESH_INTERVAL = 15 * 60 * 1000; // 15 minutos
 const API_TOKEN = (import.meta.env.VITE_AWESOME_API_TOKEN || '').trim();
+const MAX_PAIRS_PER_CYCLE = 10;
+const PAIRS_PER_REQUEST = 2;
 
-// Lista de pares comuns para buscar da AwesomeAPI
-const CURRENCY_PAIRS = 'USD-BRL,EUR-BRL,GBP-BRL,JPY-BRL,BTC-BRL,ETH-BRL,ARS-BRL,CAD-BRL,AUD-BRL,CHF-BRL,CNY-BRL,CLP-BRL,MXN-BRL';
+// Lista de pares válidos (base BRL) + turismo/PTAX principais
+const CURRENCY_PAIRS = [
+  'USD-BRL',
+  'EUR-BRL',
+  'GBP-BRL',
+  'JPY-BRL',
+  'CHF-BRL',
+  'CAD-BRL',
+  'AUD-BRL',
+  'CNY-BRL',
+  'ARS-BRL',
+  'CLP-BRL',
+  'MXN-BRL',
+  'BTC-BRL',
+  'ETH-BRL',
+  'LTC-BRL',
+  'XRP-BRL',
+  'DOGE-BRL',
+  'SOL-BRL',
+  'BNB-BRL',
+  'SGD-BRL',
+  'NZD-BRL',
+  'HKD-BRL',
+  'DKK-BRL',
+  'NOK-BRL',
+  'SEK-BRL',
+  'PLN-BRL',
+  'TRY-BRL',
+  'THB-BRL',
+  'AED-BRL',
+  'SAR-BRL',
+  'KRW-BRL',
+  'INR-BRL',
+  'RUB-BRL',
+  'ZAR-BRL',
+  'COP-BRL',
+  'PEN-BRL',
+  'UYU-BRL',
+  'PYG-BRL',
+  'BOB-BRL',
+  'USD-BRLT',
+  'EUR-BRLT',
+  'USD-BRLPTAX',
+  'EUR-BRLPTAX'
+];
 
 interface RateData {
   bid: number;
@@ -133,7 +178,7 @@ const App: React.FC = () => {
     const cachedEntry = rateCache.current[cacheKey];
     const hasApiToken = API_TOKEN.length > 0;
 
-    if (!hasApiToken && !forceRefresh && cachedEntry && (now - cachedEntry.timestamp) < CACHE_DURATION) {
+    if (!forceRefresh && cachedEntry && (now - cachedEntry.timestamp) < CACHE_DURATION) {
       setRates(cachedEntry.rates);
       setLastUpdated(new Date(cachedEntry.timestamp).toLocaleTimeString('pt-BR'));
       return;
@@ -141,52 +186,86 @@ const App: React.FC = () => {
 
     setLoadingRates(true);
     try {
-      const url = new URL(`https://economia.awesomeapi.com.br/json/last/${CURRENCY_PAIRS}`);
-      if (hasApiToken) {
-        url.searchParams.set('token', API_TOKEN);
-      }
-      url.searchParams.set('_', now.toString());
+      const pairsToLoad = CURRENCY_PAIRS.slice(0, MAX_PAIRS_PER_CYCLE);
+      const queryToken = hasApiToken ? `?token=${encodeURIComponent(API_TOKEN)}` : '';
+      const progressiveRates: Record<string, RateData> = { BRL: { bid: 1, pctChange: '0' } };
 
-      const response = await fetch(url.toString(), {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Falha ao buscar cotações: ${response.status}`);
+      if (cachedEntry?.rates) {
+        Object.assign(progressiveRates, cachedEntry.rates);
       }
 
-      const data = await response.json();
-      
-      if (data) {
-        const timestamp = Date.now();
-        const newRates: Record<string, RateData> = { BRL: { bid: 1, pctChange: '0' } };
-        
-        Object.keys(data).forEach(key => {
-          const item = data[key];
-          if (item && item.bid) {
-            const currencyCode = item.code || key.replace('BRL', '').replace('BRLT', '').replace('BRLPTAX', '');
-            newRates[currencyCode] = {
-              bid: parseFloat(item.bid),
-              pctChange: item.pctChange || '0'
-            };
+      for (let index = 0; index < pairsToLoad.length; index += PAIRS_PER_REQUEST) {
+        const pairChunk = pairsToLoad.slice(index, index + PAIRS_PER_REQUEST);
+        const pairPath = pairChunk.join(',');
+
+        try {
+          let response = await fetch(`https://economia.awesomeapi.com.br/json/last/${pairPath}${queryToken}`, {
+            cache: 'no-store',
+            headers: {
+              'Cache-Control': 'no-cache'
+            }
+          });
+
+          if (!response.ok && hasApiToken) {
+            response = await fetch(`https://economia.awesomeapi.com.br/json/last/${pairPath}`, {
+              cache: 'no-store',
+              headers: {
+                'Cache-Control': 'no-cache'
+              }
+            });
           }
-        });
 
-        if (!hasApiToken) {
-          rateCache.current[cacheKey] = {
-            rates: newRates,
-            timestamp: timestamp
-          };
+          if (!response.ok) {
+            continue;
+          }
+
+          const payload = await response.json();
+          if (!payload || payload.status === 404) {
+            continue;
+          }
+
+          Object.keys(payload).forEach((key) => {
+            const item = payload[key];
+            const parsedBid = Number.parseFloat(item?.bid);
+            if (item && Number.isFinite(parsedBid) && parsedBid > 0) {
+              const currencyCode = item.code || key.replace('BRLPTAX', '').replace('BRLT', '').replace('BRL', '');
+              if (currencyCode) {
+                progressiveRates[currencyCode] = {
+                  bid: parsedBid,
+                  pctChange: item.pctChange || '0'
+                };
+              }
+            }
+          });
+
+          setRates({ ...progressiveRates });
+        } catch {
+          continue;
         }
+      }
+
+      const newRates = { ...progressiveRates };
+      
+      if (Object.keys(newRates).length > 1) {
+        const timestamp = Date.now();
+
+        rateCache.current[cacheKey] = {
+          rates: newRates,
+          timestamp: timestamp
+        };
 
         setRates(newRates);
         setLastUpdated(new Date(timestamp).toLocaleTimeString('pt-BR'));
+      } else if (cachedEntry) {
+        setRates(cachedEntry.rates);
+        setLastUpdated(new Date(cachedEntry.timestamp).toLocaleTimeString('pt-BR'));
       }
     } catch (error) {
       console.error('Erro ao buscar cotações na AwesomeAPI:', error);
+      if (cachedEntry) {
+        setRates(cachedEntry.rates);
+        setLastUpdated(new Date(cachedEntry.timestamp).toLocaleTimeString('pt-BR'));
+      }
     } finally {
       setLoadingRates(false);
     }
@@ -289,6 +368,15 @@ const App: React.FC = () => {
   ];
 
   const popularGrid = ['USD', 'EUR', 'GBP', 'BTC', 'ARS', 'BRL', 'CAD', 'ETH'];
+  const defaultGridCurrencies = useMemo(() => {
+    const popularAvailable = popularGrid.filter((code) => code === 'BRL' || !!rates[code]);
+    if (popularAvailable.length > 0) {
+      return popularAvailable;
+    }
+
+    const allAvailable = allAvailableCurrencies.filter((code) => code === 'BRL' || !!rates[code]);
+    return allAvailable.length > 0 ? allAvailable : ['BRL'];
+  }, [rates, allAvailableCurrencies]);
 
   return (
     <div className="w-full min-h-screen transition-all duration-700 ease-in-out bg-transparent">
@@ -446,7 +534,7 @@ const App: React.FC = () => {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 sm:gap-8">
-                      {loadingRates ? (
+                      {loadingRates && allAvailableCurrencies.length <= 1 ? (
                         Array.from({ length: 8 }).map((_, i) => (
                           <div key={i} className="p-6 sm:p-8 rounded-[2rem] sm:rounded-[3rem] border border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-800/20 animate-pulse h-48 sm:h-56 flex flex-col justify-between">
                             <div className="flex justify-between items-center"><div className="w-10 h-10 sm:w-12 sm:h-12 bg-slate-200 dark:bg-slate-700 rounded-full" /><div className="w-10 h-4 bg-slate-200 dark:bg-slate-700 rounded" /></div>
@@ -454,7 +542,7 @@ const App: React.FC = () => {
                           </div>
                         ))
                       ) : (
-                        (currencySearch ? filteredCurrenciesList : popularGrid).map((code) => {
+                        (currencySearch ? filteredCurrenciesList : defaultGridCurrencies).map((code) => {
                           const rateObj = rates[code];
                           if (!rateObj && code !== 'BRL') return null;
                           
