@@ -129,8 +129,8 @@ jobs:
             local section="$1"
             awk -v title="$section" '
               BEGIN {found=0}
-              tolower($0) ~ tolower("^#+[[:space:]]*" title "[[:space:]]*$") {found=1; next}
-              found && $0 ~ /^#+[[:space:]]*/ {exit}
+              tolower($0) ~ tolower("^[[:space:]]*#+.*" title ".*$") {found=1; next}
+              found && $0 ~ /^[[:space:]]*#+[[:space:]]*/ {exit}
               found {print}
             ' "$PR_BODY_FILE" | sed '/^$/d'
           }
