@@ -1,0 +1,95 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simulador Financeiro - Premium</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Plus Jakarta Sans', 'sans-serif'],
+            },
+            colors: {
+              slate: {
+                950: '#020617',
+              }
+            }
+          },
+        },
+      }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --bg-gradient-light: radial-gradient(circle at 0% 0%, #ffffff 0%, #f1f5f9 100%);
+        --bg-gradient-dark: radial-gradient(circle at 0% 0%, #0f172a 0%, #020617 100%);
+      }
+
+      body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        margin: 0;
+        min-height: 100vh;
+        transition: background 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s ease;
+      }
+
+      body.light {
+        background: var(--bg-gradient-light);
+        background-attachment: fixed;
+        color: #0f172a;
+      }
+
+      body.dark {
+        background: var(--bg-gradient-dark);
+        background-attachment: fixed;
+        color: #f8fafc;
+      }
+
+      .glass-card {
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+
+      .premium-shadow {
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.02), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+      }
+
+      .dark .premium-shadow {
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      }
+
+      /* Custom scrollbar for elegance */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+      }
+      .dark ::-webkit-scrollbar-thumb {
+        background: #334155;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "recharts": "https://esm.sh/recharts@^3.7.0",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4"
+  }
+}
+</script>
+</head>
+  <body class="light">
+    <div id="root"></div>
+  </body>
+</html>
