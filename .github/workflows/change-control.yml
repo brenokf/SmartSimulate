@@ -90,6 +90,23 @@ jobs:
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "prev_version=$PREV_VERSION" >> $GITHUB_OUTPUT
 
+      - name: Coletar aprovadores do PR
+        id: reviews
+        run: |
+          API_URL="https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews"
+          REVIEWS=$(curl -sS \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            "$API_URL")
+
+          APPROVED_BY_JSON=$(echo "$REVIEWS" | jq -c '[.[] | select(.state == "APPROVED") | .user.login] | unique')
+          [ -z "$APPROVED_BY_JSON" ] && APPROVED_BY_JSON='[]'
+
+          APPROVED_BY_CSV=$(echo "$APPROVED_BY_JSON" | jq -r 'if length == 0 then "Nenhum aprovador registrado" else join(", ") end')
+
+          echo "approved_by_json=$APPROVED_BY_JSON" >> $GITHUB_OUTPUT
+          echo "approved_by_csv=$APPROVED_BY_CSV" >> $GITHUB_OUTPUT
+
       - name: Criar documentação da mudança
         run: |
           YEAR="${{ steps.release.outputs.year }}"
@@ -99,6 +116,7 @@ jobs:
           REPO="${{ steps.release.outputs.repo }}"
           NEW_VERSION="${{ steps.release.outputs.new_version }}"
           PREV_VERSION="${{ steps.release.outputs.prev_version }}"
+          APPROVED_BY="${{ steps.reviews.outputs.approved_by_csv }}"
 
           mkdir -p docs/changes/$YEAR/$MONTH
 
@@ -165,6 +183,7 @@ jobs:
             echo ""
             echo "## Referências"
             echo "- Autor: ${{ github.actor }}"
+            echo "- Aprovadores: $APPROVED_BY"
             echo "- Commit anterior (base): https://github.com/$REPO/commit/$BASE_SHA"
             echo "- Commit novo (head): https://github.com/$REPO/commit/$HEAD_SHA"
             echo "- Comparação (anterior → novo): https://github.com/$REPO/compare/$BASE_SHA...$HEAD_SHA"
@@ -250,11 +269,87 @@ jobs:
             mv "$TEMP_CHANGELOG" CHANGELOG.md
           fi
 
+      - name: Atualizar catálogo de releases para GitHub Pages
+        run: |
+          BASE_SHA="${{ steps.release.outputs.base_sha }}"
+          HEAD_SHA="${{ steps.release.outputs.head_sha }}"
+          REPO="${{ steps.release.outputs.repo }}"
+          YEAR="${{ steps.release.outputs.year }}"
+          MONTH="${{ steps.release.outputs.month }}"
+          DATE="${{ steps.release.outputs.date }}"
+          NEW_VERSION="${{ steps.release.outputs.new_version }}"
+          PREV_VERSION="${{ steps.release.outputs.prev_version }}"
+          TICKET="${{ steps.glpi.outputs.ticket }}"
+          APPROVED_BY_JSON='${{ steps.reviews.outputs.approved_by_json }}'
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          AUTHOR="${{ github.actor }}"
+          DOC_PATH="docs/changes/$YEAR/$MONTH/${TICKET}.md"
+          CHANGELOG_PATH="CHANGELOG.md"
+
+          CHANGED_FILES_JSON=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          [ -z "$CHANGED_FILES_JSON" ] && CHANGED_FILES_JSON='[]'
+
+          FILE_LINKS_JSON=$(echo "$CHANGED_FILES_JSON" | jq -c --arg repo "$REPO" --arg sha "$HEAD_SHA" 'map({path: ., url: ("https://github.com/" + $repo + "/blob/" + $sha + "/" + .)})')
+
+          RELEASES_FILE="docs/releases.json"
+          if [ ! -f "$RELEASES_FILE" ]; then
+            echo '{"releases":[]}' > "$RELEASES_FILE"
+          fi
+
+          TMP_FILE=$(mktemp)
+          jq \
+            --arg version "$NEW_VERSION" \
+            --arg date "$DATE" \
+            --arg ticket "$TICKET" \
+            --arg author "$AUTHOR" \
+            --arg prUrl "$PR_URL" \
+            --arg prNumber "$PR_NUMBER" \
+            --arg prTitle "$PR_TITLE" \
+            --arg baseSha "$BASE_SHA" \
+            --arg headSha "$HEAD_SHA" \
+            --arg compareUrl "https://github.com/$REPO/compare/$BASE_SHA...$HEAD_SHA" \
+            --arg previousVersion "${PREV_VERSION:-N/A}" \
+            --arg docPath "$DOC_PATH" \
+            --arg docUrl "https://github.com/$REPO/blob/$HEAD_SHA/$DOC_PATH" \
+            --arg changelogPath "$CHANGELOG_PATH" \
+            --arg changelogUrl "https://github.com/$REPO/blob/$HEAD_SHA/$CHANGELOG_PATH" \
+            --argjson approvedBy "$APPROVED_BY_JSON" \
+            --argjson changedFiles "$CHANGED_FILES_JSON" \
+            --argjson fileLinks "$FILE_LINKS_JSON" \
+            '.releases = ([{
+              version: $version,
+              date: $date,
+              ticket: $ticket,
+              author: $author,
+              approvedBy: $approvedBy,
+              pr: { number: $prNumber, title: $prTitle, url: $prUrl },
+              commits: {
+                base: $baseSha,
+                head: $headSha,
+                compareUrl: $compareUrl,
+                previousVersion: $previousVersion
+              },
+              docs: {
+                changeLogPath: $changelogPath,
+                changeLogUrl: $changelogUrl,
+                releaseDocPath: $docPath,
+                releaseDocUrl: $docUrl
+              },
+              changedFiles: $changedFiles,
+              fileLinks: $fileLinks
+            }] + (.releases // [] | map(select(.version != $version))))' \
+            "$RELEASES_FILE" > "$TMP_FILE"
+
+          mv "$TMP_FILE" "$RELEASES_FILE"
+
       - name: Commit documentação e changelog
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add docs/changes
+          git add docs/releases.json
           git add CHANGELOG.md
           git commit -m "Auto-doc: ${{ steps.glpi.outputs.ticket }} ${{ steps.release.outputs.new_version }}" || echo "Nada para commitar"
           
