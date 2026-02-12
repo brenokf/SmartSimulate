@@ -16,10 +16,13 @@ jobs:
       - name: Validar formato do título do PR
         run: |
           TITLE="${{ github.event.pull_request.title }}"
+          shopt -s nocasematch
 
-          if [[ ! "$TITLE" =~ ^GLPI-[0-9]+\ \|\ (feature|bugfix|hotfix|improvement)\ \| ]]; then
+          if [[ ! "$TITLE" =~ ^GLPI-[0-9]+[[:space:]]*\|[[:space:]]*(feature|bugfix|hotfix|improvement)[[:space:]]*\|[[:space:]]+.+$ ]] && [[ ! "$TITLE" =~ ^GLPI-[0-9]+[[:space:]]*-[[:space:]]+.+$ ]]; then
             echo "❌ Título inválido."
-            echo "Formato correto: GLPI-1234 | bugfix | Descrição"
+            echo "Formatos aceitos:"
+            echo "- GLPI-1234 | bugfix | Descrição"
+            echo "- GLPI-1234 - Descrição"
             exit 1
           fi
 
