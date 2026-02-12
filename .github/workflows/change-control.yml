@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Validar formato do título do PR
         run: |
-          TITLE="${{ github.event.pull_request.title }}"
+          TITLE=$(jq -r '.pull_request.title' "$GITHUB_EVENT_PATH")
 
           if [[ ! "$TITLE" =~ ^GLPI-[0-9]+\ \|\ (feature|bugfix|hotfix|improvement)\ \| ]]; then
             echo "❌ Título inválido."
@@ -32,14 +32,16 @@ jobs:
 
       - name: Validar presença de GLPI no PR
         run: |
-          if ! echo "${{ github.event.pull_request.title }} ${{ github.event.pull_request.body }}" | grep -qE "GLPI-[0-9]+"; then
+          TITLE=$(jq -r '.pull_request.title' "$GITHUB_EVENT_PATH")
+          BODY=$(jq -r '.pull_request.body' "$GITHUB_EVENT_PATH")
+          if ! echo "$TITLE $BODY" | grep -qE "GLPI-[0-9]+"; then
             echo "ERRO: O PR deve conter um ticket GLPI-XXXX."
             exit 1
           fi
 
       - name: Validar campos obrigatórios
         run: |
-          BODY="${{ github.event.pull_request.body }}"
+          BODY=$(jq -r '.pull_request.body' "$GITHUB_EVENT_PATH")
           
           echo "$BODY" | grep -q "Como validar" || (echo "ERRO: Campo 'Como validar' é obrigatório." && exit 1)
           echo "$BODY" | grep -q "Rollback" || (echo "ERRO: Campo 'Rollback' é obrigatório." && exit 1)
@@ -48,7 +50,9 @@ jobs:
       - name: Extrair número do GLPI
         id: glpi
         run: |
-          TICKET=$(echo "${{ github.event.pull_request.title }} ${{ github.event.pull_request.body }}" | grep -oE "GLPI-[0-9]+" | head -n 1)
+          TITLE=$(jq -r '.pull_request.title' "$GITHUB_EVENT_PATH")
+          BODY=$(jq -r '.pull_request.body' "$GITHUB_EVENT_PATH")
+          TICKET=$(echo "$TITLE $BODY" | grep -oE "GLPI-[0-9]+" | head -n 1)
           echo "ticket=$TICKET" >> $GITHUB_OUTPUT
 
       - name: Preparar metadados da release
@@ -213,7 +217,7 @@ jobs:
           FILE_LIST=$(echo "$CHANGED_FILES" | tr '\n' ', ' | sed 's/, $//')
           [ -z "$FILE_LIST" ] && FILE_LIST="Sem arquivos detectados"
 
-          DESCRIPTION="${{ github.event.pull_request.title }}"
+          DESCRIPTION=$(jq -r '.pull_request.title' "$GITHUB_EVENT_PATH")
 
           RELEASE_BLOCK_FILE=$(mktemp)
           {
