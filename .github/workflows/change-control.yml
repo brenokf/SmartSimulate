@@ -67,4 +67,5 @@ jobs:
           git add docs/changes
           git add CHANGELOG.md
           git commit -m "Auto-doc: ${{ steps.glpi.outputs.ticket }}" || echo "Nada para commitar"
-          git push
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+
