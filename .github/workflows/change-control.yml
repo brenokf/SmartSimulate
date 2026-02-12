@@ -13,6 +13,16 @@ jobs:
       contents: write
       pull-requests: read
     steps:
+      - name: Validar formato do título do PR
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+
+          if [[ ! "$TITLE" =~ ^GLPI-[0-9]+\ \|\ (feature|bugfix|hotfix|improvement)\ \| ]]; then
+            echo "❌ Título inválido."
+            echo "Formato correto: GLPI-1234 | bugfix | Descrição"
+            exit 1
+          fi
+
       - name: Checkout código
         uses: actions/checkout@v3
         with:
@@ -97,6 +107,12 @@ jobs:
           FILES_MD=$(echo "$CHANGED_FILES" | sed '/^$/d' | sed 's/^/- /')
           [ -z "$FILES_MD" ] && FILES_MD="- Nenhum arquivo detectado"
 
+          DIFF_STAT=$(git diff --shortstat "$BASE_SHA" "$HEAD_SHA")
+          [ -z "$DIFF_STAT" ] && DIFF_STAT="Sem mudanças detectadas no diff."
+
+          TOP_TOUCHED_FILES=$(git diff --numstat "$BASE_SHA" "$HEAD_SHA" | awk '{adds+=$1; dels+=$2; total=$1+$2; printf "%d\t%s\n", total, $3}' | sort -nr | head -n 10 | awk -F'\t' '{print "- " $2 " (" $1 " linhas alteradas)"}')
+          [ -z "$TOP_TOUCHED_FILES" ] && TOP_TOUCHED_FILES="- Nenhum arquivo com alterações quantificáveis"
+
           COMMITS_MD=$(git log --oneline "$BASE_SHA..$HEAD_SHA" | sed 's/^/- /')
           [ -z "$COMMITS_MD" ] && COMMITS_MD="- Nenhum commit detectado"
 
@@ -119,9 +135,13 @@ jobs:
             ' "$PR_BODY_FILE" | sed '/^$/d'
           }
 
-          TEST_SECTION=$(extract_section "Como validar")
-          IMPACT_SECTION=$(extract_section "Impacto")
-          ROLLBACK_SECTION=$(extract_section "Rollback")
+          dedupe_lines () {
+            awk 'NF { key=tolower($0); if (!seen[key]++) print }'
+          }
+
+          TEST_SECTION=$(extract_section "Como validar" | dedupe_lines)
+          IMPACT_SECTION=$(extract_section "Impacto" | dedupe_lines)
+          ROLLBACK_SECTION=$(extract_section "Rollback" | dedupe_lines)
 
           [ -z "$TEST_SECTION" ] && TEST_SECTION="Não informado no formato de seção markdown; verificar corpo do PR."
           [ -z "$IMPACT_SECTION" ] && IMPACT_SECTION="Não informado no formato de seção markdown; verificar corpo do PR."
@@ -141,11 +161,16 @@ jobs:
             echo "- Versão anterior: ${PREV_COMPARE_LINK}"
             echo ""
             echo "## Referências"
-            echo "- PR: ${{ github.event.pull_request.html_url }}"
             echo "- Autor: ${{ github.actor }}"
             echo "- Commit anterior (base): https://github.com/$REPO/commit/$BASE_SHA"
             echo "- Commit novo (head): https://github.com/$REPO/commit/$HEAD_SHA"
             echo "- Comparação (anterior → novo): https://github.com/$REPO/compare/$BASE_SHA...$HEAD_SHA"
+            echo ""
+            echo "## Insights automáticos da alteração"
+            echo "- Resumo do diff: $DIFF_STAT"
+            echo ""
+            echo "### Arquivos com maior impacto"
+            echo "$TOP_TOUCHED_FILES"
             echo ""
             echo "## Relatório de alterações"
             echo "$FILES_MD"
@@ -164,9 +189,6 @@ jobs:
             echo ""
             echo "## Rollback"
             echo "$ROLLBACK_SECTION"
-            echo ""
-            echo "## Descrição completa do PR"
-            echo '${{ github.event.pull_request.body }}'
           } > "$FILE"
 
       - name: Atualizar CHANGELOG
