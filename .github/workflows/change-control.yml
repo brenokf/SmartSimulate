@@ -127,12 +127,13 @@ jobs:
 
           extract_section () {
             local section="$1"
-            awk -v title="$section" '
+            # First remove leading whitespace from all lines, then extract section
+            sed 's/^[[:space:]]*//' "$PR_BODY_FILE" | awk -v title="$section" '
               BEGIN {found=0}
-              tolower($0) ~ tolower("^#+[[:space:]]*" title "[[:space:]]*$") {found=1; next}
+              tolower($0) ~ tolower("^#+[[:space:]]*.*" title ".*$") {found=1; next}
               found && $0 ~ /^#+[[:space:]]*/ {exit}
               found {print}
-            ' "$PR_BODY_FILE" | sed '/^$/d'
+            ' | sed '/^$/d'
           }
 
           dedupe_lines () {
