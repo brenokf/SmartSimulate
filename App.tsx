@@ -45,9 +45,10 @@ import {
   ArrowDownRight
 } from 'lucide-react';
 
-// Constantes de Cache e API
-const CACHE_DURATION = 15 * 60 * 1000; // 15 minutos
-const API_TOKEN = '347d3d060a81242fa0148481eb76db760934473c919be9f4383dfa4229a75732';
+// Constantes de atualização e API
+const CACHE_DURATION = 15 * 60 * 1000; // 15 minutos (usado apenas sem API key)
+const REFRESH_INTERVAL = 60 * 1000; // 1 minuto
+const API_TOKEN = (import.meta.env.VITE_AWESOME_API_TOKEN || '').trim();
 
 // Lista de pares comuns para buscar da AwesomeAPI
 const CURRENCY_PAIRS = 'USD-BRL,EUR-BRL,GBP-BRL,JPY-BRL,BTC-BRL,ETH-BRL,ARS-BRL,CAD-BRL,AUD-BRL,CHF-BRL,CNY-BRL,CLP-BRL,MXN-BRL';
@@ -130,8 +131,9 @@ const App: React.FC = () => {
     const now = Date.now();
     const cacheKey = 'AWESOME_API_RATES_V2';
     const cachedEntry = rateCache.current[cacheKey];
+    const hasApiToken = API_TOKEN.length > 0;
 
-    if (!forceRefresh && cachedEntry && (now - cachedEntry.timestamp) < CACHE_DURATION) {
+    if (!hasApiToken && !forceRefresh && cachedEntry && (now - cachedEntry.timestamp) < CACHE_DURATION) {
       setRates(cachedEntry.rates);
       setLastUpdated(new Date(cachedEntry.timestamp).toLocaleTimeString('pt-BR'));
       return;
@@ -139,8 +141,23 @@ const App: React.FC = () => {
 
     setLoadingRates(true);
     try {
-      const url = `https://economia.awesomeapi.com.br/json/last/${CURRENCY_PAIRS}?token=${API_TOKEN}`;
-      const response = await fetch(url);
+      const url = new URL(`https://economia.awesomeapi.com.br/json/last/${CURRENCY_PAIRS}`);
+      if (hasApiToken) {
+        url.searchParams.set('token', API_TOKEN);
+      }
+      url.searchParams.set('_', now.toString());
+
+      const response = await fetch(url.toString(), {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Falha ao buscar cotações: ${response.status}`);
+      }
+
       const data = await response.json();
       
       if (data) {
@@ -150,17 +167,20 @@ const App: React.FC = () => {
         Object.keys(data).forEach(key => {
           const item = data[key];
           if (item && item.bid) {
-            newRates[item.code] = {
+            const currencyCode = item.code || key.replace('BRL', '').replace('BRLT', '').replace('BRLPTAX', '');
+            newRates[currencyCode] = {
               bid: parseFloat(item.bid),
               pctChange: item.pctChange || '0'
             };
           }
         });
 
-        rateCache.current[cacheKey] = {
-          rates: newRates,
-          timestamp: timestamp
-        };
+        if (!hasApiToken) {
+          rateCache.current[cacheKey] = {
+            rates: newRates,
+            timestamp: timestamp
+          };
+        }
 
         setRates(newRates);
         setLastUpdated(new Date(timestamp).toLocaleTimeString('pt-BR'));
@@ -176,7 +196,7 @@ const App: React.FC = () => {
     let intervalId: number;
     if (activeTab === 'CURRENCY_CONVERTER') {
       fetchRates();
-      intervalId = window.setInterval(() => fetchRates(true), CACHE_DURATION);
+      intervalId = window.setInterval(() => fetchRates(true), REFRESH_INTERVAL);
     }
     return () => { if (intervalId) window.clearInterval(intervalId); };
   }, [activeTab, fetchRates]);
