@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+    types: [opened, edited, synchronize, reopened]
 
 jobs:
   validate-and-generate-doc:
@@ -12,6 +13,19 @@ jobs:
       contents: write
       pull-requests: read
     steps:
+      - name: Validar formato do título do PR
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+          shopt -s nocasematch
+
+          if [[ ! "$TITLE" =~ ^GLPI-[0-9]+[[:space:]]*\|[[:space:]]*(feature|bugfix|hotfix|improvement)[[:space:]]*\|[[:space:]]+.+$ ]] && [[ ! "$TITLE" =~ ^GLPI-[0-9]+[[:space:]]*-[[:space:]]+.+$ ]]; then
+            echo "❌ Título inválido."
+            echo "Formatos aceitos:"
+            echo "- GLPI-1234 | bugfix | Descrição"
+            echo "- GLPI-1234 - Descrição"
+            exit 1
+          fi
+
       - name: Checkout código
         uses: actions/checkout@v3
         with:
@@ -40,39 +54,304 @@ jobs:
           TICKET=$(echo "${{ github.event.pull_request.title }} ${{ github.event.pull_request.body }}" | grep -oE "GLPI-[0-9]+" | head -n 1)
           echo "ticket=$TICKET" >> $GITHUB_OUTPUT
 
-      - name: Criar documentação da mudança
+      - name: Preparar metadados da release
+        id: release
         run: |
+          DATE=$(date +%Y-%m-%d)
           YEAR=$(date +%Y)
           MONTH=$(date +%m)
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          REPO="${{ github.repository }}"
+
+          if [ ! -f CHANGELOG.md ]; then
+            echo "# Changelog" > CHANGELOG.md
+            echo "" >> CHANGELOG.md
+          fi
+
+          LAST_VERSION=$(grep -m 1 -oE '^## \[v[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md | sed -E 's/^## \[(v[0-9]+\.[0-9]+\.[0-9]+)\]/\1/')
+          if [ -z "$LAST_VERSION" ]; then
+            NEW_VERSION="v0.1.0"
+            PREV_VERSION=""
+          else
+            PREV_VERSION="$LAST_VERSION"
+            MAJOR=$(echo "$LAST_VERSION" | sed -E 's/v([0-9]+)\.([0-9]+)\.([0-9]+)/\1/')
+            MINOR=$(echo "$LAST_VERSION" | sed -E 's/v([0-9]+)\.([0-9]+)\.([0-9]+)/\2/')
+            PATCH=$(echo "$LAST_VERSION" | sed -E 's/v([0-9]+)\.([0-9]+)\.([0-9]+)/\3/')
+            NEW_VERSION="v${MAJOR}.${MINOR}.$((PATCH + 1))"
+          fi
+
+          echo "date=$DATE" >> $GITHUB_OUTPUT
+          echo "year=$YEAR" >> $GITHUB_OUTPUT
+          echo "month=$MONTH" >> $GITHUB_OUTPUT
+          echo "base_sha=$BASE_SHA" >> $GITHUB_OUTPUT
+          echo "head_sha=$HEAD_SHA" >> $GITHUB_OUTPUT
+          echo "repo=$REPO" >> $GITHUB_OUTPUT
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "prev_version=$PREV_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Coletar aprovadores do PR
+        id: reviews
+        run: |
+          API_URL="https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews"
+          REVIEWS=$(curl -sS \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            "$API_URL")
+
+          APPROVED_BY_JSON=$(echo "$REVIEWS" | jq -c '[.[] | select(.state == "APPROVED") | .user.login] | unique')
+          [ -z "$APPROVED_BY_JSON" ] && APPROVED_BY_JSON='[]'
+
+          APPROVED_BY_CSV=$(echo "$APPROVED_BY_JSON" | jq -r 'if length == 0 then "Nenhum aprovador registrado" else join(", ") end')
+
+          echo "approved_by_json=$APPROVED_BY_JSON" >> $GITHUB_OUTPUT
+          echo "approved_by_csv=$APPROVED_BY_CSV" >> $GITHUB_OUTPUT
+
+      - name: Criar documentação da mudança
+        run: |
+          YEAR="${{ steps.release.outputs.year }}"
+          MONTH="${{ steps.release.outputs.month }}"
+          BASE_SHA="${{ steps.release.outputs.base_sha }}"
+          HEAD_SHA="${{ steps.release.outputs.head_sha }}"
+          REPO="${{ steps.release.outputs.repo }}"
+          NEW_VERSION="${{ steps.release.outputs.new_version }}"
+          PREV_VERSION="${{ steps.release.outputs.prev_version }}"
+          APPROVED_BY="${{ steps.reviews.outputs.approved_by_csv }}"
+
           mkdir -p docs/changes/$YEAR/$MONTH
 
           FILE="docs/changes/$YEAR/$MONTH/${{ steps.glpi.outputs.ticket }}.md"
 
-          echo "# ${{ steps.glpi.outputs.ticket }}" > $FILE
-          echo "" >> $FILE
-          echo "## PR" >> $FILE
-          echo "${{ github.event.pull_request.html_url }}" >> $FILE
-          echo "" >> $FILE
-          echo "## Autor" >> $FILE
-          echo "${{ github.actor }}" >> $FILE
-          echo "" >> $FILE
-          echo "## Descrição" >> $FILE
-          echo "${{ github.event.pull_request.body }}" >> $FILE
-          echo "" >> $FILE
-          echo "## Arquivos alterados" >> $FILE
-          echo "Ver PR para diff completo." >> $FILE
+          git fetch origin ${{ github.event.pull_request.base.ref }} --depth=1
+
+          CHANGED_FILES=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          FILES_MD=$(echo "$CHANGED_FILES" | sed '/^$/d' | sed 's/^/- /')
+          [ -z "$FILES_MD" ] && FILES_MD="- Nenhum arquivo detectado"
+
+          DIFF_STAT=$(git diff --shortstat "$BASE_SHA" "$HEAD_SHA")
+          [ -z "$DIFF_STAT" ] && DIFF_STAT="Sem mudanças detectadas no diff."
+
+          TOP_TOUCHED_FILES=$(git diff --numstat "$BASE_SHA" "$HEAD_SHA" | awk '{adds+=$1; dels+=$2; total=$1+$2; printf "%d\t%s\n", total, $3}' | sort -nr | head -n 10 | awk -F'\t' '{print "- " $2 " (" $1 " linhas alteradas)"}')
+          [ -z "$TOP_TOUCHED_FILES" ] && TOP_TOUCHED_FILES="- Nenhum arquivo com alterações quantificáveis"
+
+          COMMITS_MD=$(git log --oneline "$BASE_SHA..$HEAD_SHA" | sed 's/^/- /')
+          [ -z "$COMMITS_MD" ] && COMMITS_MD="- Nenhum commit detectado"
+
+          METHODS_RAW=$(git diff -U0 "$BASE_SHA" "$HEAD_SHA" | grep -E '^\+.*(function[[:space:]]+[A-Za-z0-9_]+|const[[:space:]]+[A-Za-z0-9_]+[[:space:]]*=[[:space:]]*\(|[A-Za-z0-9_]+[[:space:]]*\([^)]*\)[[:space:]]*\{|def[[:space:]]+[A-Za-z0-9_]+\(|class[[:space:]]+[A-Za-z0-9_]+)' | sed 's/^+//' | sed 's/^\s*//' | sort -u)
+          METHODS_MD=$(echo "$METHODS_RAW" | sed '/^$/d' | sed 's/^/- /')
+          [ -z "$METHODS_MD" ] && METHODS_MD="- Nenhum método/função novo identificado no diff"
+
+          PR_BODY_FILE=$(mktemp)
+          cat <<'EOF' > "$PR_BODY_FILE"
+          ${{ github.event.pull_request.body }}
+          EOF
+
+          extract_section () {
+            local section="$1"
+            awk -v title="$section" '
+              BEGIN {found=0}
+              tolower($0) ~ tolower("^#+[[:space:]]*" title "[[:space:]]*$") {found=1; next}
+              found && $0 ~ /^#+[[:space:]]*/ {exit}
+              found {print}
+            ' "$PR_BODY_FILE" | sed '/^$/d'
+          }
+
+          dedupe_lines () {
+            awk 'NF { key=tolower($0); if (!seen[key]++) print }'
+          }
+
+          TEST_SECTION=$(extract_section "Como validar" | dedupe_lines)
+          IMPACT_SECTION=$(extract_section "Impacto" | dedupe_lines)
+          ROLLBACK_SECTION=$(extract_section "Rollback" | dedupe_lines)
+
+          [ -z "$TEST_SECTION" ] && TEST_SECTION="Não informado no formato de seção markdown; verificar corpo do PR."
+          [ -z "$IMPACT_SECTION" ] && IMPACT_SECTION="Não informado no formato de seção markdown; verificar corpo do PR."
+          [ -z "$ROLLBACK_SECTION" ] && ROLLBACK_SECTION="Não informado no formato de seção markdown; verificar corpo do PR."
+
+          PREV_COMPARE_LINK="N/A"
+          if [ -n "$PREV_VERSION" ]; then
+            PREV_COMPARE_LINK="$PREV_VERSION"
+          fi
+
+          {
+            echo "# ${{ steps.glpi.outputs.ticket }}"
+            echo ""
+            echo "## Release"
+            echo "- Versão: $NEW_VERSION"
+            echo "- Data: ${{ steps.release.outputs.date }}"
+            echo "- Versão anterior: ${PREV_COMPARE_LINK}"
+            echo ""
+            echo "## Referências"
+            echo "- Autor: ${{ github.actor }}"
+            echo "- Aprovadores: $APPROVED_BY"
+            echo "- Commit anterior (base): https://github.com/$REPO/commit/$BASE_SHA"
+            echo "- Commit novo (head): https://github.com/$REPO/commit/$HEAD_SHA"
+            echo "- Comparação (anterior → novo): https://github.com/$REPO/compare/$BASE_SHA...$HEAD_SHA"
+            echo ""
+            echo "## Insights automáticos da alteração"
+            echo "- Resumo do diff: $DIFF_STAT"
+            echo ""
+            echo "### Arquivos com maior impacto"
+            echo "$TOP_TOUCHED_FILES"
+            echo ""
+            echo "## Relatório de alterações"
+            echo "$FILES_MD"
+            echo ""
+            echo "## Métodos/Funções/Classes impactadas"
+            echo "$METHODS_MD"
+            echo ""
+            echo "## Commits no intervalo"
+            echo "$COMMITS_MD"
+            echo ""
+            echo "## Pontos críticos para teste (Como validar)"
+            echo "$TEST_SECTION"
+            echo ""
+            echo "## Impacto"
+            echo "$IMPACT_SECTION"
+            echo ""
+            echo "## Rollback"
+            echo "$ROLLBACK_SECTION"
+          } > "$FILE"
 
       - name: Atualizar CHANGELOG
         run: |
-          echo "- ${{ steps.glpi.outputs.ticket }} - PR #${{ github.event.pull_request.number }}" >> CHANGELOG.md
+          BASE_SHA="${{ steps.release.outputs.base_sha }}"
+          HEAD_SHA="${{ steps.release.outputs.head_sha }}"
+          REPO="${{ steps.release.outputs.repo }}"
+          NEW_VERSION="${{ steps.release.outputs.new_version }}"
+          PREV_VERSION="${{ steps.release.outputs.prev_version }}"
+          DATE="${{ steps.release.outputs.date }}"
+
+          CHANGED_FILES=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+
+          METHOD_LIST=$(git diff -U0 "$BASE_SHA" "$HEAD_SHA" | grep -E '^\+.*(function[[:space:]]+[A-Za-z0-9_]+|const[[:space:]]+[A-Za-z0-9_]+[[:space:]]*=[[:space:]]*\(|[A-Za-z0-9_]+[[:space:]]*\([^)]*\)[[:space:]]*\{|def[[:space:]]+[A-Za-z0-9_]+\(|class[[:space:]]+[A-Za-z0-9_]+)' | sed 's/^+//' | sed 's/^\s*//' | head -n 10 | tr '\n' '; ')
+          [ -z "$METHOD_LIST" ] && METHOD_LIST="Métodos não identificados automaticamente"
+
+          FILE_LIST=$(echo "$CHANGED_FILES" | tr '\n' ', ' | sed 's/, $//')
+          [ -z "$FILE_LIST" ] && FILE_LIST="Sem arquivos detectados"
+
+          DESCRIPTION="${{ github.event.pull_request.title }}"
+
+          RELEASE_BLOCK_FILE=$(mktemp)
+          {
+            echo "## [$NEW_VERSION] - $DATE"
+            echo "- Ticket: ${{ steps.glpi.outputs.ticket }}"
+            echo "- PR: #${{ github.event.pull_request.number }} (${{ github.event.pull_request.html_url }})"
+            echo "- Arquivos alterados: $FILE_LIST"
+            echo "- Funções/Métodos: $METHOD_LIST"
+            echo "- Descrição breve: $DESCRIPTION"
+            echo "- Link anterior: ${PREV_VERSION:-N/A}"
+            echo "- Commit anterior: https://github.com/$REPO/commit/$BASE_SHA"
+            echo "- Commit novo: https://github.com/$REPO/commit/$HEAD_SHA"
+            echo "- Comparação: https://github.com/$REPO/compare/$BASE_SHA...$HEAD_SHA"
+            echo ""
+          } > "$RELEASE_BLOCK_FILE"
+
+          if grep -q "^## \[$NEW_VERSION\]" CHANGELOG.md; then
+            echo "Versão $NEW_VERSION já registrada no changelog."
+          else
+            TEMP_CHANGELOG=$(mktemp)
+            if grep -q "^# Changelog" CHANGELOG.md; then
+              {
+                head -n 1 CHANGELOG.md
+                echo ""
+                cat "$RELEASE_BLOCK_FILE"
+                tail -n +2 CHANGELOG.md
+              } > "$TEMP_CHANGELOG"
+            else
+              {
+                echo "# Changelog"
+                echo ""
+                cat "$RELEASE_BLOCK_FILE"
+                cat CHANGELOG.md
+              } > "$TEMP_CHANGELOG"
+            fi
+            mv "$TEMP_CHANGELOG" CHANGELOG.md
+          fi
+
+      - name: Atualizar catálogo de releases para GitHub Pages
+        run: |
+          BASE_SHA="${{ steps.release.outputs.base_sha }}"
+          HEAD_SHA="${{ steps.release.outputs.head_sha }}"
+          REPO="${{ steps.release.outputs.repo }}"
+          YEAR="${{ steps.release.outputs.year }}"
+          MONTH="${{ steps.release.outputs.month }}"
+          DATE="${{ steps.release.outputs.date }}"
+          NEW_VERSION="${{ steps.release.outputs.new_version }}"
+          PREV_VERSION="${{ steps.release.outputs.prev_version }}"
+          TICKET="${{ steps.glpi.outputs.ticket }}"
+          APPROVED_BY_JSON='${{ steps.reviews.outputs.approved_by_json }}'
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          AUTHOR="${{ github.actor }}"
+          DOC_PATH="docs/changes/$YEAR/$MONTH/${TICKET}.md"
+          CHANGELOG_PATH="CHANGELOG.md"
+
+          CHANGED_FILES_JSON=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          [ -z "$CHANGED_FILES_JSON" ] && CHANGED_FILES_JSON='[]'
+
+          FILE_LINKS_JSON=$(echo "$CHANGED_FILES_JSON" | jq -c --arg repo "$REPO" --arg sha "$HEAD_SHA" 'map({path: ., url: ("https://github.com/" + $repo + "/blob/" + $sha + "/" + .)})')
+
+          RELEASES_FILE="docs/releases.json"
+          if [ ! -f "$RELEASES_FILE" ]; then
+            echo '{"releases":[]}' > "$RELEASES_FILE"
+          fi
+
+          TMP_FILE=$(mktemp)
+          jq \
+            --arg version "$NEW_VERSION" \
+            --arg date "$DATE" \
+            --arg ticket "$TICKET" \
+            --arg author "$AUTHOR" \
+            --arg prUrl "$PR_URL" \
+            --arg prNumber "$PR_NUMBER" \
+            --arg prTitle "$PR_TITLE" \
+            --arg baseSha "$BASE_SHA" \
+            --arg headSha "$HEAD_SHA" \
+            --arg compareUrl "https://github.com/$REPO/compare/$BASE_SHA...$HEAD_SHA" \
+            --arg previousVersion "${PREV_VERSION:-N/A}" \
+            --arg docPath "$DOC_PATH" \
+            --arg docUrl "https://github.com/$REPO/blob/$HEAD_SHA/$DOC_PATH" \
+            --arg changelogPath "$CHANGELOG_PATH" \
+            --arg changelogUrl "https://github.com/$REPO/blob/$HEAD_SHA/$CHANGELOG_PATH" \
+            --argjson approvedBy "$APPROVED_BY_JSON" \
+            --argjson changedFiles "$CHANGED_FILES_JSON" \
+            --argjson fileLinks "$FILE_LINKS_JSON" \
+            '.releases = ([{
+              version: $version,
+              date: $date,
+              ticket: $ticket,
+              author: $author,
+              approvedBy: $approvedBy,
+              pr: { number: $prNumber, title: $prTitle, url: $prUrl },
+              commits: {
+                base: $baseSha,
+                head: $headSha,
+                compareUrl: $compareUrl,
+                previousVersion: $previousVersion
+              },
+              docs: {
+                changeLogPath: $changelogPath,
+                changeLogUrl: $changelogUrl,
+                releaseDocPath: $docPath,
+                releaseDocUrl: $docUrl
+              },
+              changedFiles: $changedFiles,
+              fileLinks: $fileLinks
+            }] + (.releases // [] | map(select(.version != $version))))' \
+            "$RELEASES_FILE" > "$TMP_FILE"
+
+          mv "$TMP_FILE" "$RELEASES_FILE"
 
       - name: Commit documentação e changelog
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add docs/changes
+          git add docs/releases.json
           git add CHANGELOG.md
-          git commit -m "Auto-doc: ${{ steps.glpi.outputs.ticket }}" || echo "Nada para commitar"
+          git commit -m "Auto-doc: ${{ steps.glpi.outputs.ticket }} ${{ steps.release.outputs.new_version }}" || echo "Nada para commitar"
           
           # Pull any remote changes before pushing
           git pull --rebase origin ${{ github.event.pull_request.head.ref }} || true

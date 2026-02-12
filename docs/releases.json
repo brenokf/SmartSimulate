@@ -1,0 +1,100 @@
+{
+  "releases": [
+    {
+      "version": "v0.1.0",
+      "date": "2026-02-12",
+      "ticket": "GLPI-0002",
+      "author": "brenokf",
+      "approvedBy": [],
+      "pr": {
+        "number": "3",
+        "title": "GLPI-0002 | Bugfix | Bugfix no conversor global e melhoria no workflow de change-control",
+        "url": "https://github.com/brenokf/SmartSimulate/pull/3"
+      },
+      "commits": {
+        "base": "85e278b58b2829316220f5873c7062da24b0e0b2",
+        "head": "247c5f409e038482e5c7b513a02e2ee97dde6959",
+        "compareUrl": "https://github.com/brenokf/SmartSimulate/compare/85e278b58b2829316220f5873c7062da24b0e0b2...247c5f409e038482e5c7b513a02e2ee97dde6959",
+        "previousVersion": "N/A"
+      },
+      "docs": {
+        "changeLogPath": "CHANGELOG.md",
+        "changeLogUrl": "https://github.com/brenokf/SmartSimulate/blob/247c5f409e038482e5c7b513a02e2ee97dde6959/CHANGELOG.md",
+        "releaseDocPath": "docs/changes/2026/02/GLPI-0002.md",
+        "releaseDocUrl": "https://github.com/brenokf/SmartSimulate/blob/247c5f409e038482e5c7b513a02e2ee97dde6959/docs/changes/2026/02/GLPI-0002.md"
+      },
+      "changedFiles": [
+        ".github/pull_request_template.md",
+        ".github/workflows/change-control.yml",
+        "App.tsx",
+        "docs/app.js",
+        "docs/index.html",
+        "docs/releases.json",
+        "docs/styles.css"
+      ],
+      "fileLinks": [
+        {
+          "path": ".github/pull_request_template.md",
+          "url": "https://github.com/brenokf/SmartSimulate/blob/247c5f409e038482e5c7b513a02e2ee97dde6959/.github/pull_request_template.md"
+        },
+        {
+          "path": ".github/workflows/change-control.yml",
+          "url": "https://github.com/brenokf/SmartSimulate/blob/247c5f409e038482e5c7b513a02e2ee97dde6959/.github/workflows/change-control.yml"
+        },
+        {
+          "path": "App.tsx",
+          "url": "https://github.com/brenokf/SmartSimulate/blob/247c5f409e038482e5c7b513a02e2ee97dde6959/App.tsx"
+        },
+        {
+          "path": "docs/app.js",
+          "url": "https://github.com/brenokf/SmartSimulate/blob/247c5f409e038482e5c7b513a02e2ee97dde6959/docs/app.js"
+        },
+        {
+          "path": "docs/index.html",
+          "url": "https://github.com/brenokf/SmartSimulate/blob/247c5f409e038482e5c7b513a02e2ee97dde6959/docs/index.html"
+        },
+        {
+          "path": "docs/releases.json",
+          "url": "https://github.com/brenokf/SmartSimulate/blob/247c5f409e038482e5c7b513a02e2ee97dde6959/docs/releases.json"
+        },
+        {
+          "path": "docs/styles.css",
+          "url": "https://github.com/brenokf/SmartSimulate/blob/247c5f409e038482e5c7b513a02e2ee97dde6959/docs/styles.css"
+        }
+      ]
+    },
+    {
+      "version": "v0.0.0",
+      "date": "2026-02-12",
+      "ticket": "GLPI-1234",
+      "author": "brenokf",
+      "approvedBy": [],
+      "pr": {
+        "number": "1",
+        "title": "Release inicial",
+        "url": "https://github.com/brenokf/SmartSimulate/pull/1"
+      },
+      "commits": {
+        "base": "",
+        "head": "",
+        "compareUrl": "",
+        "previousVersion": "N/A"
+      },
+      "docs": {
+        "changeLogPath": "CHANGELOG.md",
+        "changeLogUrl": "https://github.com/brenokf/SmartSimulate/blob/main/CHANGELOG.md",
+        "releaseDocPath": "docs/changes/2026/02/GLPI-1234.md",
+        "releaseDocUrl": "https://github.com/brenokf/SmartSimulate/blob/main/docs/changes/2026/02/GLPI-1234.md"
+      },
+      "changedFiles": [
+        "App.tsx"
+      ],
+      "fileLinks": [
+        {
+          "path": "App.tsx",
+          "url": "https://github.com/brenokf/SmartSimulate/blob/main/App.tsx"
+        }
+      ]
+    }
+  ]
+}
