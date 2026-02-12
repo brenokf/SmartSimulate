@@ -5,6 +5,11 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+  pull-requests: read
+
+
 jobs:
   validate-and-generate-doc:
     runs-on: ubuntu-latest
@@ -64,8 +69,12 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
+
           git add docs/changes
           git add CHANGELOG.md
           git commit -m "Auto-doc: ${{ steps.glpi.outputs.ticket }}" || echo "Nada para commitar"
-          git push origin HEAD:${{ github.event.pull_request.head.ref }}
 
+          # Atualiza branch com rebase antes de enviar
+          git pull --rebase origin ${{ github.event.pull_request.head.ref }}
+
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
