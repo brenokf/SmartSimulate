@@ -1,0 +1,70 @@
+name: Change Control & Documentation
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate-and-generate-doc:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Validar presença de GLPI no PR
+        run: |
+          if ! echo "${{ github.event.pull_request.title }} ${{ github.event.pull_request.body }}" | grep -qE "GLPI-[0-9]+"; then
+            echo "ERRO: O PR deve conter um ticket GLPI-XXXX."
+            exit 1
+          fi
+
+      - name: Validar campos obrigatórios
+        run: |
+          BODY="${{ github.event.pull_request.body }}"
+          
+          echo "$BODY" | grep -q "Como validar" || (echo "ERRO: Campo 'Como validar' é obrigatório." && exit 1)
+          echo "$BODY" | grep -q "Rollback" || (echo "ERRO: Campo 'Rollback' é obrigatório." && exit 1)
+          echo "$BODY" | grep -q "Impacto" || (echo "ERRO: Campo 'Impacto' é obrigatório." && exit 1)
+
+      - name: Extrair número do GLPI
+        id: glpi
+        run: |
+          TICKET=$(echo "${{ github.event.pull_request.title }} ${{ github.event.pull_request.body }}" | grep -oE "GLPI-[0-9]+" | head -n 1)
+          echo "ticket=$TICKET" >> $GITHUB_OUTPUT
+
+      - name: Criar documentação da mudança
+        run: |
+          YEAR=$(date +%Y)
+          MONTH=$(date +%m)
+          mkdir -p docs/changes/$YEAR/$MONTH
+
+          FILE="docs/changes/$YEAR/$MONTH/${{ steps.glpi.outputs.ticket }}.md"
+
+          echo "# ${{ steps.glpi.outputs.ticket }}" > $FILE
+          echo "" >> $FILE
+          echo "## PR" >> $FILE
+          echo "${{ github.event.pull_request.html_url }}" >> $FILE
+          echo "" >> $FILE
+          echo "## Autor" >> $FILE
+          echo "${{ github.actor }}" >> $FILE
+          echo "" >> $FILE
+          echo "## Descrição" >> $FILE
+          echo "${{ github.event.pull_request.body }}" >> $FILE
+          echo "" >> $FILE
+          echo "## Arquivos alterados" >> $FILE
+          echo "Ver PR para diff completo." >> $FILE
+
+      - name: Atualizar CHANGELOG
+        run: |
+          echo "- ${{ steps.glpi.outputs.ticket }} - PR #${{ github.event.pull_request.number }}" >> CHANGELOG.md
+
+      - name: Commit documentação e changelog
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add docs/changes
+          git add CHANGELOG.md
+          git commit -m "Auto-doc: ${{ steps.glpi.outputs.ticket }}" || echo "Nada para commitar"
+          git push
