@@ -125,15 +125,19 @@ jobs:
           ${{ github.event.pull_request.body }}
           EOF
 
+          # Preprocess PR body once: remove leading whitespace
+          PR_BODY_CLEAN=$(mktemp)
+          sed 's/^[[:space:]]*//' "$PR_BODY_FILE" > "$PR_BODY_CLEAN"
+
           extract_section () {
             local section="$1"
-            # First remove leading whitespace from all lines, then extract section
-            sed 's/^[[:space:]]*//' "$PR_BODY_FILE" | awk -v title="$section" '
+            # Extract section content from preprocessed body
+            awk -v title="$section" '
               BEGIN {found=0}
-              tolower($0) ~ tolower("^#+[[:space:]]*.*" title ".*$") {found=1; next}
+              tolower($0) ~ tolower("^#+[[:space:]]*[^a-z]*" title) {found=1; next}
               found && $0 ~ /^#+[[:space:]]*/ {exit}
               found {print}
-            ' | sed '/^$/d'
+            ' "$PR_BODY_CLEAN" | sed '/^$/d'
           }
 
           dedupe_lines () {
