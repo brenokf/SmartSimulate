@@ -1,0 +1,37 @@
+{
+  "releases": [
+    {
+      "version": "v0.0.0",
+      "date": "2026-02-12",
+      "ticket": "GLPI-1234",
+      "author": "brenokf",
+      "approvedBy": [],
+      "pr": {
+        "number": "1",
+        "title": "Release inicial",
+        "url": "https://github.com/brenokf/SmartSimulate/pull/1"
+      },
+      "commits": {
+        "base": "",
+        "head": "",
+        "compareUrl": "",
+        "previousVersion": "N/A"
+      },
+      "docs": {
+        "changeLogPath": "CHANGELOG.md",
+        "changeLogUrl": "https://github.com/brenokf/SmartSimulate/blob/main/CHANGELOG.md",
+        "releaseDocPath": "docs/changes/2026/02/GLPI-1234.md",
+        "releaseDocUrl": "https://github.com/brenokf/SmartSimulate/blob/main/docs/changes/2026/02/GLPI-1234.md"
+      },
+      "changedFiles": [
+        "App.tsx"
+      ],
+      "fileLinks": [
+        {
+          "path": "App.tsx",
+          "url": "https://github.com/brenokf/SmartSimulate/blob/main/App.tsx"
+        }
+      ]
+    }
+  ]
+}
