@@ -24,7 +24,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # ✅ Salva title/body em arquivos (NÃO usa output multilinha)
+      # Salva title/body em arquivos (NÃO usa output multilinha)
       - name: 🔒 Ler dados do PR (safe)
         id: pr
         shell: bash
@@ -40,9 +40,9 @@ jobs:
           echo "number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "url=$PR_URL" >> "$GITHUB_OUTPUT"
 
-          echo "✅ PR salvo em pr_title.txt / pr_body.txt"
+          echo "PR salvo em pr_title.txt / pr_body.txt"
 
-      - name: 🔍 Validar ticket GLPI
+      - name: Validar ticket GLPI
         id: validate-ticket
         shell: bash
         run: |
@@ -54,12 +54,12 @@ jobs:
           TICKET="$(printf '%s\n' "$PR_TITLE $PR_BODY" | grep -oE "GLPI-[0-9]+" | head -n 1 || true)"
 
           if [ -z "$TICKET" ]; then
-            echo "❌ ERRO: O PR deve conter um ticket GLPI-XXXX no título ou descrição."
+            echo "ERRO: O PR deve conter um ticket GLPI-XXXX no título ou descrição."
             exit 1
           fi
 
           echo "ticket=$TICKET" >> "$GITHUB_OUTPUT"
-          echo "✅ Ticket encontrado: $TICKET"
+          echo "Ticket encontrado: $TICKET"
 
       - name: 📋 Validar campos obrigatórios
         shell: bash
@@ -80,7 +80,7 @@ jobs:
           check_section "Rollback"
           check_section "Impacto"
 
-          echo "✅ Todos os campos obrigatórios estão presentes"
+          echo "Todos os campos obrigatórios estão presentes"
 
       - name: 📊 Extrair metadados da release
         id: meta
@@ -133,7 +133,7 @@ jobs:
             echo "release_name=$RELEASE_NAME"
           } >> "$GITHUB_OUTPUT"
 
-          echo "✅ Metadados gerados: $NEW_VERSION"
+          echo "Metadados gerados: $NEW_VERSION"
 
       - name: 👥 Coletar aprovações
         id: reviews
@@ -165,7 +165,7 @@ jobs:
             echo "approved_count=$APPROVED_COUNT"
           } >> "$GITHUB_OUTPUT"
 
-          echo "✅ Aprovadores: $APPROVED_BY_CSV"
+          echo "Aprovadores: $APPROVED_BY_CSV"
 
       - name: 🔧 Analisar alterações de código
         id: code-analysis
@@ -207,7 +207,7 @@ jobs:
           printf '%s\n' "$COMMITS" > commits.txt
           printf '%s\n' "$METHODS_ANALYSIS" > methods.txt
 
-          echo "✅ Análise de código concluída: $FILE_COUNT arquivos, $COMMIT_COUNT commits"
+          echo "Análise de código concluída: $FILE_COUNT arquivos, $COMMIT_COUNT commits"
 
       - name: 📝 Extrair seções do PR
         id: extract-sections
@@ -239,9 +239,9 @@ jobs:
           printf '%s\n' "$IMPACT" > impact.txt
           printf '%s\n' "$ROLLBACK" > rollback.txt
 
-          echo "✅ Seções extraídas com sucesso"
+          echo "Seções extraídas com sucesso"
 
-      - name: 🎨 Gerar documentação markdown
+      - name: Gerar documentação markdown
         shell: bash
         run: |
           set -euo pipefail
@@ -348,9 +348,9 @@ jobs:
             *Documentação gerada automaticamente em $DATE*
             EOF
 
-          echo "✅ Documentação gerada: $DOC_FILE"
+          echo "Documentação gerada: $DOC_FILE"
 
-      - name: 📚 Atualizar CHANGELOG
+      - name: Atualizar CHANGELOG
         shell: bash
         run: |
           set -euo pipefail
@@ -411,9 +411,9 @@ jobs:
           mv CHANGELOG.tmp CHANGELOG.md
           rm -f "$TEMP_ENTRY"
 
-          echo "✅ CHANGELOG atualizado com versão $NEW_VERSION"
+          echo "CHANGELOG atualizado com versão $NEW_VERSION"
 
-      - name: 🔄 Gerar JSON de codeChanges
+      - name: Gerar JSON de codeChanges
         id: code-changes
         shell: bash
         run: |
@@ -498,9 +498,9 @@ jobs:
                   print(json.dumps(changes, ensure_ascii=False))
                   PYTHON_SCRIPT
 
-          echo "✅ Code changes JSON gerado"
+          echo "Code changes JSON gerado"
 
-      - name: 📊 Gerar releases.json para front-end
+      - name: Gerar releases.json para front-end
         shell: bash
         run: |
           set -euo pipefail
@@ -585,9 +585,9 @@ jobs:
           ' "$RELEASES_FILE" > "$TMP_FILE"
 
           mv "$TMP_FILE" "$RELEASES_FILE"
-          echo "✅ releases.json atualizado com versão $NEW_VERSION"
+          echo "releases.json atualizado com versão $NEW_VERSION"
 
-      - name: 📱 Gerar preview da release (opcional)
+      - name: Gerar preview da release (opcional)
         if: github.event.pull_request.draft == false
         shell: bash
         run: |
@@ -615,7 +615,7 @@ jobs:
 
           echo "✅ Preview gerado"
 
-      - name: ✅ Commit e push das mudanças
+      - name: Commit e push das mudanças
         shell: bash
         run: |
           set -euo pipefail
@@ -626,7 +626,7 @@ jobs:
           git add docs/releases/ docs/releases.json CHANGELOG.md
 
           if git diff --staged --quiet; then
-            echo "ℹ️ Nenhuma mudança para commitar"
+            echo "Nenhuma mudança para commitar"
             exit 0
           fi
 
@@ -635,16 +635,16 @@ jobs:
           git pull --rebase origin "${{ github.event.pull_request.head.ref }}"
           git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
 
-          echo "✅ Mudanças commitadas e enviadas"
+          echo "Mudanças commitadas e enviadas"
 
-      - name: 📢 Sumário da execução
+      - name: Sumário da execução
         if: always()
         shell: bash
         run: |
           set -euo pipefail
 
           {
-            echo "## 📊 Resumo da Documentação Gerada"
+            echo "## Resumo da Documentação Gerada"
             echo ""
             echo "| Item | Detalhe |"
             echo "|------|---------|"
