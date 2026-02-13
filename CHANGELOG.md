@@ -1,5 +1,25 @@
 # Changelog
 
+## [v0.1.1] - 2026-02-13
+
+### GLPI-0003: Padroniza documentação de mudanças no changelog and tickets
+
+#### 🎫 Ticket
+- GLPI-0003
+
+#### 📊 Estatísticas
+- Arquivos alterados: 5
+- Commits: 7
+- Métodos/Funções: 13
+
+#### ✅ Aprovações
+- Aprovadores: Aguardando aprovações
+
+#### 🔗 Links
+- Pull Request: [#9](https://github.com/brenokf/SmartSimulate/pull/9)
+- Comparação: [838cf41f2fafaaf433c74f37ed928d9b7d3e6b1d...476eb32aae7d9f111643504f3f962b3e6b3c1b4c](https://github.com/brenokf/SmartSimulate/compare/838cf41f2fafaaf433c74f37ed928d9b7d3e6b1d...476eb32aae7d9f111643504f3f962b3e6b3c1b4c)
+
+
 ## [v0.1.0] - 2026-02-12
 - Ticket: GLPI-0002
 - PR: #3 (https://github.com/brenokf/SmartSimulate/pull/3)

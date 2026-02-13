@@ -1,32 +1,36 @@
 {
   "releases": [
     {
-      "version": "v0.1.0",
-      "date": "2026-02-12",
-      "ticket": "GLPI-0002",
+      "version": "v0.1.1",
+      "date": "2026-02-13",
+      "timestamp": "1771009910",
+      "ticket": "GLPI-0003",
       "author": "brenokf",
       "approvedBy": [],
       "pr": {
-        "number": "3",
-        "title": "GLPI-0002 | Bugfix | Bugfix no conversor global e melhoria no workflow de change-control",
-        "url": "https://github.com/brenokf/SmartSimulate/pull/3"
+        "number": "9",
+        "title": "GLPI-0003: Padroniza documentação de mudanças no changelog and tickets",
+        "url": "https://github.com/brenokf/SmartSimulate/pull/9"
       },
       "commits": {
-        "base": "85e278b58b2829316220f5873c7062da24b0e0b2",
-        "head": "247c5f409e038482e5c7b513a02e2ee97dde6959",
-        "compareUrl": "https://github.com/brenokf/SmartSimulate/compare/85e278b58b2829316220f5873c7062da24b0e0b2...247c5f409e038482e5c7b513a02e2ee97dde6959",
-        "previousVersion": "N/A"
+        "base": "838cf41f2fafaaf433c74f37ed928d9b7d3e6b1d",
+        "head": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+        "compareUrl": "https://github.com/brenokf/SmartSimulate/compare/838cf41f2fafaaf433c74f37ed928d9b7d3e6b1d...476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+        "previousVersion": "v0.1.0"
       },
       "docs": {
         "changeLogPath": "CHANGELOG.md",
-        "changeLogUrl": "https://github.com/brenokf/SmartSimulate/blob/247c5f409e038482e5c7b513a02e2ee97dde6959/CHANGELOG.md",
-        "releaseDocPath": "docs/changes/2026/02/GLPI-0002.md",
-        "releaseDocUrl": "https://github.com/brenokf/SmartSimulate/blob/247c5f409e038482e5c7b513a02e2ee97dde6959/docs/changes/2026/02/GLPI-0002.md"
+        "changeLogUrl": "https://github.com/brenokf/SmartSimulate/blob/476eb32aae7d9f111643504f3f962b3e6b3c1b4c/CHANGELOG.md",
+        "releaseDocPath": "docs/releases/2026/02/GLPI-0003.md",
+        "releaseDocUrl": "https://github.com/brenokf/SmartSimulate/blob/476eb32aae7d9f111643504f3f962b3e6b3c1b4c/docs/releases/2026/02/GLPI-0003.md"
+      },
+      "stats": {
+        "fileCount": "5",
+        "commitCount": "7",
+        "methodCount": "13"
       },
       "changedFiles": [
-        ".github/pull_request_template.md",
         ".github/workflows/change-control.yml",
-        "App.tsx",
         "docs/app.js",
         "docs/index.html",
         "docs/releases.json",
@@ -34,67 +38,482 @@
       ],
       "fileLinks": [
         {
-          "path": ".github/pull_request_template.md",
-          "url": "https://github.com/brenokf/SmartSimulate/blob/247c5f409e038482e5c7b513a02e2ee97dde6959/.github/pull_request_template.md"
-        },
-        {
           "path": ".github/workflows/change-control.yml",
-          "url": "https://github.com/brenokf/SmartSimulate/blob/247c5f409e038482e5c7b513a02e2ee97dde6959/.github/workflows/change-control.yml"
-        },
-        {
-          "path": "App.tsx",
-          "url": "https://github.com/brenokf/SmartSimulate/blob/247c5f409e038482e5c7b513a02e2ee97dde6959/App.tsx"
+          "url": "https://github.com/brenokf/SmartSimulate/blob/476eb32aae7d9f111643504f3f962b3e6b3c1b4c/.github/workflows/change-control.yml"
         },
         {
           "path": "docs/app.js",
-          "url": "https://github.com/brenokf/SmartSimulate/blob/247c5f409e038482e5c7b513a02e2ee97dde6959/docs/app.js"
+          "url": "https://github.com/brenokf/SmartSimulate/blob/476eb32aae7d9f111643504f3f962b3e6b3c1b4c/docs/app.js"
         },
         {
           "path": "docs/index.html",
-          "url": "https://github.com/brenokf/SmartSimulate/blob/247c5f409e038482e5c7b513a02e2ee97dde6959/docs/index.html"
+          "url": "https://github.com/brenokf/SmartSimulate/blob/476eb32aae7d9f111643504f3f962b3e6b3c1b4c/docs/index.html"
         },
         {
           "path": "docs/releases.json",
-          "url": "https://github.com/brenokf/SmartSimulate/blob/247c5f409e038482e5c7b513a02e2ee97dde6959/docs/releases.json"
+          "url": "https://github.com/brenokf/SmartSimulate/blob/476eb32aae7d9f111643504f3f962b3e6b3c1b4c/docs/releases.json"
         },
         {
           "path": "docs/styles.css",
-          "url": "https://github.com/brenokf/SmartSimulate/blob/247c5f409e038482e5c7b513a02e2ee97dde6959/docs/styles.css"
+          "url": "https://github.com/brenokf/SmartSimulate/blob/476eb32aae7d9f111643504f3f962b3e6b3c1b4c/docs/styles.css"
         }
-      ]
-    },
-    {
-      "version": "v0.0.0",
-      "date": "2026-02-12",
-      "ticket": "GLPI-1234",
-      "author": "brenokf",
-      "approvedBy": [],
-      "pr": {
-        "number": "1",
-        "title": "Release inicial",
-        "url": "https://github.com/brenokf/SmartSimulate/pull/1"
-      },
-      "commits": {
-        "base": "",
-        "head": "",
-        "compareUrl": "",
-        "previousVersion": "N/A"
-      },
-      "docs": {
-        "changeLogPath": "CHANGELOG.md",
-        "changeLogUrl": "https://github.com/brenokf/SmartSimulate/blob/main/CHANGELOG.md",
-        "releaseDocPath": "docs/changes/2026/02/GLPI-1234.md",
-        "releaseDocUrl": "https://github.com/brenokf/SmartSimulate/blob/main/docs/changes/2026/02/GLPI-1234.md"
-      },
-      "changedFiles": [
-        "App.tsx"
       ],
-      "fileLinks": [
+      "codeChanges": [
         {
-          "path": "App.tsx",
-          "url": "https://github.com/brenokf/SmartSimulate/blob/main/App.tsx"
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 1,
+          "lineEnd": 1,
+          "code": "name: 🚀 Change Control & Documentation",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 7,
+          "lineEnd": 7,
+          "code": "- master",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 8,
+          "lineEnd": 8,
+          "code": "types: [opened, edited, synchronize, reopened, ready_for_review]",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 10,
+          "lineEnd": 10,
+          "code": "permissions:",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 11,
+          "lineEnd": 11,
+          "code": "contents: write",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 12,
+          "lineEnd": 12,
+          "code": "pull-requests: read",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 13,
+          "lineEnd": 13,
+          "code": "issues: read",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 16,
+          "lineEnd": 16,
+          "code": "generate-documentation:",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 19,
+          "lineEnd": 19,
+          "code": "- name: 📥 Checkout do código",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 26,
+          "lineEnd": 26,
+          "code": "- name: 🔍 Validar ticket GLPI",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 27,
+          "lineEnd": 27,
+          "code": "id: validate-ticket",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 28,
+          "lineEnd": 28,
+          "code": "shell: bash",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 30,
+          "lineEnd": 30,
+          "code": "set -euo pipefail",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 32,
+          "lineEnd": 32,
+          "code": "PR_TITLE=\"$(jq -r '.pull_request.title // \"\"' \"$GITHUB_EVENT_PATH\")\"",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 33,
+          "lineEnd": 33,
+          "code": "PR_BODY=\"$(jq -r '.pull_request.body // \"\"' \"$GITHUB_EVENT_PATH\")\"",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 35,
+          "lineEnd": 35,
+          "code": "TICKET=\"$(printf '%s\\n' \"$PR_TITLE $PR_BODY\" | grep -oE \"GLPI-[0-9]+\" | head -n 1 || true)\"",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 37,
+          "lineEnd": 37,
+          "code": "if [ -z \"$TICKET\" ]; then",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 38,
+          "lineEnd": 38,
+          "code": "echo \"❌ ERRO: O PR deve conter um ticket GLPI-XXXX no título ou descrição.\"",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 42,
+          "lineEnd": 42,
+          "code": "echo \"ticket=$TICKET\" >> \"$GITHUB_OUTPUT\"",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 43,
+          "lineEnd": 43,
+          "code": "echo \"✅ Ticket encontrado: $TICKET\"",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 45,
+          "lineEnd": 45,
+          "code": "- name: 📋 Validar campos obrigatórios",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 46,
+          "lineEnd": 46,
+          "code": "shell: bash",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 48,
+          "lineEnd": 48,
+          "code": "set -euo pipefail",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 50,
+          "lineEnd": 50,
+          "code": "BODY=\"$(jq -r '.pull_request.body // \"\"' \"$GITHUB_EVENT_PATH\")\"",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 52,
+          "lineEnd": 52,
+          "code": "check_section() {",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 53,
+          "lineEnd": 53,
+          "code": "local section=\"$1\"",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 54,
+          "lineEnd": 54,
+          "code": "if ! printf '%s\\n' \"$BODY\" | grep -iE \"^###?[[:space:]]*$section[[:space:]]*$\" > /dev/null; then",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 55,
+          "lineEnd": 55,
+          "code": "echo \"❌ ERRO: Seção '$section' é obrigatória no PR.\"",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 56,
+          "lineEnd": 56,
+          "code": "exit 1",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 57,
+          "lineEnd": 57,
+          "code": "fi",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 58,
+          "lineEnd": 58,
+          "code": "}",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 60,
+          "lineEnd": 60,
+          "code": "check_section \"Como validar\"",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 61,
+          "lineEnd": 61,
+          "code": "check_section \"Rollback\"",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 62,
+          "lineEnd": 62,
+          "code": "check_section \"Impacto\"",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 64,
+          "lineEnd": 64,
+          "code": "echo \"✅ Todos os campos obrigatórios estão presentes\"",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 66,
+          "lineEnd": 66,
+          "code": "- name: 📊 Extrair metadados da release",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 67,
+          "lineEnd": 67,
+          "code": "id: meta",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 68,
+          "lineEnd": 68,
+          "code": "shell: bash",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 70,
+          "lineEnd": 70,
+          "code": "set -euo pipefail",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 72,
+          "lineEnd": 72,
+          "code": "DATE=\"$(date +%Y-%m-%d)\"",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 73,
+          "lineEnd": 73,
+          "code": "YEAR=\"$(date +%Y)\"",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 74,
+          "lineEnd": 74,
+          "code": "MONTH=\"$(date +%m)\"",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 75,
+          "lineEnd": 75,
+          "code": "TIMESTAMP=\"$(date +%s)\"",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 81,
+          "lineEnd": 81,
+          "code": "LAST_VERSION=\"\"",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 82,
+          "lineEnd": 82,
+          "code": "if [ -f CHANGELOG.md ]; then",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 83,
+          "lineEnd": 83,
+          "code": "LAST_VERSION=\"$(grep -m 1 -oE '## \\[v[0-9]+\\.[0-9]+\\.[0-9]+\\]' CHANGELOG.md | sed -E 's/## \\[(v[0-9]+\\.[0-9]+\\.[0-9]+)\\]/\\1/' || true)\"",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 87,
+          "lineEnd": 87,
+          "code": "MAJOR=\"0\"; MINOR=\"1\"; PATCH=\"0\"",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 89,
+          "lineEnd": 89,
+          "code": "MAJOR=\"$(echo \"$LAST_VERSION\" | sed -E 's/v([0-9]+)\\.([0-9]+)\\.([0-9]+)/\\1/')\"",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 90,
+          "lineEnd": 90,
+          "code": "MINOR=\"$(echo \"$LAST_VERSION\" | sed -E 's/v([0-9]+)\\.([0-9]+)\\.([0-9]+)/\\2/')\"",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
+        },
+        {
+          "type": "Alteração",
+          "file": ".github/workflows/change-control.yml",
+          "lineStart": 91,
+          "lineEnd": 91,
+          "code": "PATCH=\"$(echo \"$LAST_VERSION\" | sed -E 's/v([0-9]+)\\.([0-9]+)\\.([0-9]+)/\\3/')\"",
+          "commit": "476eb32aae7d9f111643504f3f962b3e6b3c1b4c",
+          "language": "yml"
         }
       ]
     }
-  ]
+  ],
+  "metadata": {
+    "lastUpdated": "1771009910",
+    "totalReleases": 1
+  }
 }
