@@ -383,7 +383,6 @@ jobs:
           rm -f "$TEMP_ENTRY"
 
           echo "✅ CHANGELOG atualizado com versão $NEW_VERSION"
-
       - name: 🔄 Gerar JSON de codeChanges
         id: code-changes
         shell: bash
@@ -399,74 +398,78 @@ jobs:
           import re
           import subprocess
 
-          base_sha = os.environ.get('BASE_SHA')
-          head_sha = os.environ.get('HEAD_SHA')
+          base_sha = os.environ.get("BASE_SHA")
+          head_sha = os.environ.get("HEAD_SHA")
 
           try:
-          diff = subprocess.check_output(['git', 'diff', '-U0', base_sha, head_sha], text=True)
+              diff = subprocess.check_output(
+                  ["git", "diff", "-U0", base_sha, head_sha],
+                  text=True
+              )
           except Exception:
-          diff = ''
+              diff = ""
 
           changes = []
           current_file = None
           current_line = None
 
           method_patterns = [
-          r'^\+\s*(function\s+\w+\s*\()',
-          r'^\+\s*(const\s+\w+\s*=\s*\([^)]*\)\s*=>)',
-          r'^\+\s*(let\s+\w+\s*=\s*\([^)]*\)\s*=>)',
-          r'^\+\s*(class\s+\w+)',
-          r'^\+\s*(def\s+\w+\s*\()',
-          r'^\+\s*(\w+\s*=\s*function\s*\()',
-          r'^\+\s*(async\s+function\s+\w+\s*\()',
-          r'^\+\s*(async\s+\w+\s*=\s*\([^)]*\)\s*=>)',
-          r'^\+\s*(\w+\s*:\s*function\s*\()',
-          r'^\+\s*(\w+\s*\([^)]*\)\s*{)',
+              r'^\+\s*(function\s+\w+\s*\()',
+              r'^\+\s*(const\s+\w+\s*=\s*\([^)]*\)\s*=>)',
+              r'^\+\s*(let\s+\w+\s*=\s*\([^)]*\)\s*=>)',
+              r'^\+\s*(class\s+\w+)',
+              r'^\+\s*(def\s+\w+\s*\()',
+              r'^\+\s*(\w+\s*=\s*function\s*\()',
+              r'^\+\s*(async\s+function\s+\w+\s*\()',
+              r'^\+\s*(async\s+\w+\s*=\s*\([^)]*\)\s*=>)',
+              r'^\+\s*(\w+\s*:\s*function\s*\()',
+              r'^\+\s*(\w+\s*\([^)]*\)\s*{)',
           ]
 
-          line_pattern = re.compile(r'^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@')
+          line_pattern = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@")
 
-          for line in diff.split('\n'):
-          if line.startswith('+++ b/'):
-          current_file = line[6:]
-          continue
+          for line in diff.split("\n"):
+              if line.startswith("+++ b/"):
+                  current_file = line[6:]
+                  continue
 
-          m = line_pattern.match(line)
-          if m:
-          current_line = int(m.group(1))
-          continue
+              m = line_pattern.match(line)
+              if m:
+                  current_line = int(m.group(1))
+                  continue
 
-          if line.startswith('+') and not line.startswith('+++'):
-          if current_line is None or not current_file:
-              continue
+              if line.startswith("+") and not line.startswith("+++"):
+                  if current_line is None or not current_file:
+                      continue
 
-          code = line[1:].rstrip()
-          if not code.strip():
-              current_line += 1
-              continue
+                  code = line[1:].rstrip()
+                  if not code.strip():
+                      current_line += 1
+                      continue
 
-          change_type = 'Alteração'
-          for pattern in method_patterns:
-              if re.search(pattern, code, re.IGNORECASE):
-                  change_type = 'Classe' if 'class' in pattern else 'Função/Método'
-                  break
+                  change_type = "Alteração"
+                  for pattern in method_patterns:
+                      if re.search(pattern, code, re.IGNORECASE):
+                          change_type = "Classe" if "class" in pattern else "Função/Método"
+                          break
 
-          changes.append({
-              'type': change_type,
-              'file': current_file,
-              'lineStart': current_line,
-              'lineEnd': current_line,
-              'code': code.strip(),
-              'commit': head_sha,
-              'language': os.path.splitext(current_file)[1][1:] or 'unknown'
-          })
-          current_line += 1
+                  changes.append({
+                      "type": change_type,
+                      "file": current_file,
+                      "lineStart": current_line,
+                      "lineEnd": current_line,
+                      "code": code.strip(),
+                      "commit": head_sha,
+                      "language": os.path.splitext(current_file)[1][1:] or "unknown"
+                  })
+                  current_line += 1
 
           changes = changes[:50]
-          print(json.dumps(changes, ensure_ascii=False))  # compacto (1 linha)
+          print(json.dumps(changes, ensure_ascii=False))
           PYTHON_SCRIPT
 
           echo "✅ Code changes JSON gerado"
+
       - name: 📊 Gerar releases.json para front-end
         shell: bash
         run: |
