@@ -413,7 +413,7 @@ jobs:
 
           echo "CHANGELOG atualizado com versão $NEW_VERSION"
 
-      - name: Gerar JSON de codeChanges
+      - name: 🔄 Gerar JSON de codeChanges
         id: code-changes
         shell: bash
         run: |
@@ -422,7 +422,7 @@ jobs:
           export BASE_SHA="${{ steps.meta.outputs.base_sha }}"
           export HEAD_SHA="${{ steps.meta.outputs.head_sha }}"
 
-          python3 - << 'PYTHON_SCRIPT' > code_changes.json
+          python3 - <<'PYTHON_SCRIPT' > code_changes.json
           import json
           import os
           import re
@@ -432,10 +432,7 @@ jobs:
           head_sha = os.environ.get("HEAD_SHA")
 
           try:
-              diff = subprocess.check_output(
-                  ["git", "diff", "-U0", base_sha, head_sha],
-                  text=True
-              )
+              diff = subprocess.check_output(["git", "diff", "-U0", base_sha, head_sha], text=True)
           except Exception:
               diff = ""
 
@@ -477,10 +474,10 @@ jobs:
                       current_line += 1
                       continue
 
-                  change_type = "Alteracao"
+                  change_type = "Alteração"
                   for pattern in method_patterns:
                       if re.search(pattern, code, re.IGNORECASE):
-                          change_type = "Classe" if "class" in pattern else "Funcao/Metodo"
+                          change_type = "Classe" if "class" in pattern else "Função/Método"
                           break
 
                   changes.append({
@@ -494,11 +491,11 @@ jobs:
                   })
                   current_line += 1
 
-                  changes = changes[:50]
-                  print(json.dumps(changes, ensure_ascii=False))
-                  PYTHON_SCRIPT
+          print(json.dumps(changes[:50], ensure_ascii=False))
+          PYTHON_SCRIPT
 
-          echo "Code changes JSON gerado"
+              echo "✅ Code changes JSON gerado"
+
 
       - name: Gerar releases.json para front-end
         shell: bash
