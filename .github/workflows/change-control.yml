@@ -227,14 +227,17 @@ jobs:
             ' | sed '/^$/d' | head -20
           }
 
+          CONTEXT="$(extract_section "Contexto" | head -10)"
           HOW_TO_VALIDATE="$(extract_section "Como validar" | head -10)"
           IMPACT="$(extract_section "Impacto" | head -10)"
           ROLLBACK="$(extract_section "Rollback" | head -10)"
 
-          [ -z "$HOW_TO_VALIDATE" ] && HOW_TO_VALIDATE="*Nenhum roteiro de validação fornecido. Recomenda-se adicionar casos de teste.*"
-          [ -z "$IMPACT" ] && IMPACT="*Impacto não descrito. Favor documentar o impacto desta mudança.*"
-          [ -z "$ROLLBACK" ] && ROLLBACK="*Estratégia de rollback não documentada. Recomenda-se definir plano de reversão.*"
+          [ -z "$CONTEXT" ] && CONTEXT="*Context not provided. Add a non-technical summary for stakeholders.*"
+          [ -z "$HOW_TO_VALIDATE" ] && HOW_TO_VALIDATE="*No validation steps provided. Add test coverage guidance.*"
+          [ -z "$IMPACT" ] && IMPACT="*Impact not described. Please document business impact.*"
+          [ -z "$ROLLBACK" ] && ROLLBACK="*Rollback plan not documented. Define a rollback strategy.*"
 
+          printf '%s\n' "$CONTEXT" > context.txt
           printf '%s\n' "$HOW_TO_VALIDATE" > how_to_validate.txt
           printf '%s\n' "$IMPACT" > impact.txt
           printf '%s\n' "$ROLLBACK" > rollback.txt
@@ -261,6 +264,7 @@ jobs:
           mkdir -p "$DOC_DIR"
           DOC_FILE="$DOC_DIR/${TICKET}.md"
 
+          CONTEXT="$(cat context.txt)"
           HOW_TO_VALIDATE="$(cat how_to_validate.txt)"
           IMPACT="$(cat impact.txt)"
           ROLLBACK="$(cat rollback.txt)"
@@ -516,6 +520,9 @@ jobs:
           APPROVED_BY_JSON='${{ steps.reviews.outputs.approved_by_json }}'
           CHANGED_FILES_JSON='${{ steps.code-analysis.outputs.changed_files_json }}'
           CODE_CHANGES_JSON="$(jq -c . code_changes.json)"
+          CONTEXT_TEXT="$(cat context.txt)"
+          IMPACT_TEXT="$(cat impact.txt)"
+          VALIDATE_TEXT="$(cat how_to_validate.txt)"
 
           FILE_LINKS_JSON="$(echo "$CHANGED_FILES_JSON" | jq -c --arg repo "$REPO" --arg sha "$HEAD_SHA" '
             map({ path: ., url: ("https://github.com/" + $repo + "/blob/" + $sha + "/" + .) })
@@ -551,6 +558,9 @@ jobs:
             --arg changeLogUrl "$CHANGELOG_URL" \
             --arg releaseDocPath "$DOC_PATH" \
             --arg releaseDocUrl "$DOC_URL" \
+            --arg prContext "$CONTEXT_TEXT" \
+            --arg impact "$IMPACT_TEXT" \
+            --arg howToValidate "$VALIDATE_TEXT" \
             --argjson changedFiles "$CHANGED_FILES_JSON" \
             --argjson fileLinks "$FILE_LINKS_JSON" \
             --argjson codeChanges "$CODE_CHANGES_JSON" \
@@ -564,6 +574,9 @@ jobs:
               ticket: $ticket,
               author: $author,
               approvedBy: $approvedBy,
+              context: $prContext,
+              impact: $impact,
+              howToValidate: $howToValidate,
               pr: { number: $prNumber, title: $prTitle, url: $prUrl },
               commits: { base: $baseSha, head: $headSha, compareUrl: $compareUrl, previousVersion: $previousVersion },
               docs: { changeLogPath: $changeLogPath, changeLogUrl: $changeLogUrl, releaseDocPath: $releaseDocPath, releaseDocUrl: $releaseDocUrl },
