@@ -382,6 +382,16 @@ input[type="search"]::placeholder {
   border: 1px solid rgba(89, 217, 255, 0.2);
 }
 
+.detail-text {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(18, 16, 30, 0.7);
+  border: 1px solid rgba(89, 217, 255, 0.18);
+  color: #f4f2ff;
+  line-height: 1.6;
+}
+
 .audit-table {
   display: grid;
   gap: 6px;
