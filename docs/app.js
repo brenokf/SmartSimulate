@@ -38,6 +38,23 @@ const parseMetadataDate = (timestamp) => {
   return formatDate(timestamp);
 };
 
+const escapeHtml = (value) => {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+};
+
+const formatMultiline = (value) => {
+  const safe = escapeHtml(value || "").trim();
+  if (!safe) {
+    return "--";
+  }
+  return safe.replace(/\r?\n/g, "<br />");
+};
+
 const renderList = () => {
   elements.list.innerHTML = "";
   if (state.filtered.length === 0) {
@@ -94,6 +111,9 @@ const renderDetail = (release) => {
   const commits = release.commits || {};
   const docs = release.docs || {};
   const approvers = (release.approvedBy || []).join(", ") || "Pending";
+  const context = formatMultiline(release.context);
+  const impact = formatMultiline(release.impact);
+  const howToValidate = formatMultiline(release.howToValidate);
   const changedFiles = release.changedFiles || [];
   const codeChanges = release.codeChanges || [];
   const historyItems = [];
@@ -129,6 +149,8 @@ const renderDetail = (release) => {
     compare: "<span class=\"icon\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M10 3H5a2 2 0 0 0-2 2v5\"/><path d=\"M14 21h5a2 2 0 0 0 2-2v-5\"/><path d=\"M7 17l10-10\"/></svg></span>",
     changes: "<span class=\"icon\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 4h16v16H4z\"/><path d=\"M8 8h8\"/><path d=\"M8 12h8\"/><path d=\"M8 16h5\"/></svg></span>",
     validate: "<span class=\"icon\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9 12l2 2 4-4\"/><circle cx=\"12\" cy=\"12\" r=\"9\"/></svg></span>",
+    context: "<span class=\"icon\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z\"/><path d=\"M8 9h8\"/><path d=\"M8 13h6\"/></svg></span>",
+    impact: "<span class=\"icon\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 3l9 4-9 4-9-4 9-4z\"/><path d=\"M3 11l9 4 9-4\"/><path d=\"M3 15l9 4 9-4\"/></svg></span>",
   };
 
   elements.detail.innerHTML = `
@@ -188,6 +210,16 @@ const renderDetail = (release) => {
     </div>
 
     <div class="detail-section">
+      <h3 class="heading-with-icon">${icons.context}Context</h3>
+      <div class="detail-text">${context}</div>
+    </div>
+
+    <div class="detail-section">
+      <h3 class="heading-with-icon">${icons.impact}Impact</h3>
+      <div class="detail-text">${impact}</div>
+    </div>
+
+    <div class="detail-section">
       <h3 class="heading-with-icon">${icons.pr}PR</h3>
       <p>
         <strong>${release.pr?.title || "--"}</strong><br />
@@ -205,9 +237,9 @@ const renderDetail = (release) => {
 
     <div class="detail-section">
       <h3 class="heading-with-icon">${icons.validate}How to validate</h3>
-      <p class="subtitle">Use the release notes for step-by-step validation and rollback guidance.</p>
+      <div class="detail-text">${howToValidate}</div>
       <ul>
-        <li><a href="${docs.releaseDocUrl || "#"}" target="_blank" rel="noreferrer">Open validation checklist</a></li>
+        <li><a href="${docs.releaseDocUrl || "#"}" target="_blank" rel="noreferrer">Open release notes</a></li>
         <li><span>QA owner: ${release.author || "--"}</span></li>
       </ul>
     </div>
