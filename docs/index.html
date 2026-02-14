@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SmartSimulate Releases</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <div class="page">
+      <header class="site-header" aria-label="Release dashboard header">
+        <div class="brand">
+          <p class="kicker">SmartSimulate</p>
+          <h1>Release Control Room</h1>
+          <p class="subtitle">Track deployments, approvals, and impact without leaving the dashboard.</p>
+          <div class="badge-row">
+            <span class="badge">Live from docs/releases.json</span>
+            <span class="badge accent">PR-driven releases</span>
+          </div>
+        </div>
+        <div class="meta-card meta-card-wide" aria-label="Release summary">
+          <div class="meta-row">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3v6l4 2" />
+                <circle cx="12" cy="12" r="9" />
+              </svg>
+            </span>
+            <div>
+              <span>Last updated</span>
+              <strong id="last-updated">--</strong>
+            </div>
+          </div>
+          <div class="meta-row">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 7h16" />
+                <path d="M4 12h16" />
+                <path d="M4 17h16" />
+              </svg>
+            </span>
+            <div>
+              <span>Total releases</span>
+              <strong id="total-releases">--</strong>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main id="main" class="layout" aria-label="Release dashboard">
+        <aside class="panel list-panel" aria-label="Release list">
+          <div class="panel-header">
+            <div>
+              <h2>
+                <span class="icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 12h18" />
+                    <path d="M7 8h10" />
+                    <path d="M7 16h10" />
+                  </svg>
+                </span>
+                Release Feed
+              </h2>
+              <p class="panel-subtitle">Search by ticket, version, or title.</p>
+            </div>
+            <label class="sr-only" for="search">Search releases</label>
+            <input id="search" type="search" placeholder="Search releases" autocomplete="off" />
+          </div>
+          <ul id="release-list" class="release-list" aria-live="polite" role="list"></ul>
+          <p id="empty-list" class="empty hidden" role="status">No releases found.</p>
+        </aside>
+
+        <section class="panel detail" aria-live="polite" aria-label="Release details">
+          <div id="detail" class="detail-content">
+            <p class="empty">Select a release to view details.</p>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer" aria-label="Footer">
+        <p>Generated from docs/releases.json.</p>
+      </footer>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

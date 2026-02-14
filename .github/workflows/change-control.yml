@@ -15,6 +15,7 @@ permissions:
 jobs:
   generate-documentation:
     runs-on: ubuntu-latest
+
     steps:
       - name: 📥 Checkout do código
         uses: actions/checkout@v3
@@ -23,31 +24,49 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 🔍 Validar ticket GLPI
+      # Salva title/body em arquivos (NÃO usa output multilinha)
+      - name: 🔒 Ler dados do PR (safe)
+        id: pr
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          jq -r '.pull_request.title // ""' "$GITHUB_EVENT_PATH" > pr_title.txt
+          jq -r '.pull_request.body // ""'  "$GITHUB_EVENT_PATH" > pr_body.txt
+
+          PR_NUMBER="$(jq -r '.pull_request.number // ""' "$GITHUB_EVENT_PATH")"
+          PR_URL="$(jq -r '.pull_request.html_url // ""' "$GITHUB_EVENT_PATH")"
+
+          echo "number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "url=$PR_URL" >> "$GITHUB_OUTPUT"
+
+          echo "PR salvo em pr_title.txt / pr_body.txt"
+
+      - name: Validar ticket GLPI
         id: validate-ticket
         shell: bash
         run: |
           set -euo pipefail
 
-          PR_TITLE="$(jq -r '.pull_request.title // ""' "$GITHUB_EVENT_PATH")"
-          PR_BODY="$(jq -r '.pull_request.body // ""' "$GITHUB_EVENT_PATH")"
+          PR_TITLE="$(cat pr_title.txt)"
+          PR_BODY="$(cat pr_body.txt)"
 
           TICKET="$(printf '%s\n' "$PR_TITLE $PR_BODY" | grep -oE "GLPI-[0-9]+" | head -n 1 || true)"
 
           if [ -z "$TICKET" ]; then
-            echo "❌ ERRO: O PR deve conter um ticket GLPI-XXXX no título ou descrição."
+            echo "ERRO: O PR deve conter um ticket GLPI-XXXX no título ou descrição."
             exit 1
           fi
 
           echo "ticket=$TICKET" >> "$GITHUB_OUTPUT"
-          echo "✅ Ticket encontrado: $TICKET"
+          echo "Ticket encontrado: $TICKET"
 
       - name: 📋 Validar campos obrigatórios
         shell: bash
         run: |
           set -euo pipefail
 
-          BODY="$(jq -r '.pull_request.body // ""' "$GITHUB_EVENT_PATH")"
+          BODY="$(cat pr_body.txt)"
 
           check_section() {
             local section="$1"
@@ -61,7 +80,7 @@ jobs:
           check_section "Rollback"
           check_section "Impacto"
 
-          echo "✅ Todos os campos obrigatórios estão presentes"
+          echo "Todos os campos obrigatórios estão presentes"
 
       - name: 📊 Extrair metadados da release
         id: meta
@@ -80,11 +99,14 @@ jobs:
 
           LAST_VERSION=""
           if [ -f CHANGELOG.md ]; then
-            LAST_VERSION="$(grep -m 1 -oE '## \[v[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md | sed -E 's/## \[(v[0-9]+\.[0-9]+\.[0-9]+)\]/\1/' || true)"
+            LAST_VERSION="$(grep -m 1 -oE '## \[v[0-9]+\.[0-9]+\.[0-9]+\]' CHANGELOG.md \
+              | sed -E 's/## \[(v[0-9]+\.[0-9]+\.[0-9]+)\]/\1/' || true)"
           fi
 
           if [ -z "$LAST_VERSION" ]; then
-            MAJOR="0"; MINOR="1"; PATCH="0"
+            MAJOR="0"
+            MINOR="1"
+            PATCH="0"
           else
             MAJOR="$(echo "$LAST_VERSION" | sed -E 's/v([0-9]+)\.([0-9]+)\.([0-9]+)/\1/')"
             MINOR="$(echo "$LAST_VERSION" | sed -E 's/v([0-9]+)\.([0-9]+)\.([0-9]+)/\2/')"
@@ -95,7 +117,7 @@ jobs:
           NEW_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
           PREV_VERSION="${LAST_VERSION:-N/A}"
 
-          PR_TITLE="$(jq -r '.pull_request.title // ""' "$GITHUB_EVENT_PATH")"
+          PR_TITLE="$(cat pr_title.txt)"
           RELEASE_NAME="Release ${NEW_VERSION} - ${PR_TITLE}"
 
           {
@@ -111,7 +133,7 @@ jobs:
             echo "release_name=$RELEASE_NAME"
           } >> "$GITHUB_OUTPUT"
 
-          echo "✅ Metadados gerados: $NEW_VERSION"
+          echo "Metadados gerados: $NEW_VERSION"
 
       - name: 👥 Coletar aprovações
         id: reviews
@@ -119,7 +141,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          API_URL="https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews"
+          API_URL="https://api.github.com/repos/${{ github.repository }}/pulls/${{ steps.pr.outputs.number }}/reviews"
 
           REVIEWS="$(curl -sS \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
@@ -143,7 +165,7 @@ jobs:
             echo "approved_count=$APPROVED_COUNT"
           } >> "$GITHUB_OUTPUT"
 
-          echo "✅ Aprovadores: $APPROVED_BY_CSV"
+          echo "Aprovadores: $APPROVED_BY_CSV"
 
       - name: 🔧 Analisar alterações de código
         id: code-analysis
@@ -163,7 +185,9 @@ jobs:
           COMMITS="$(git log --pretty=format:"%h - %s (%an)" "$BASE_SHA..$HEAD_SHA" || true)"
           COMMIT_COUNT="$(git rev-list --count "$BASE_SHA..$HEAD_SHA" || echo 0)"
 
-          METHODS_ANALYSIS="$(git diff -U0 "$BASE_SHA" "$HEAD_SHA" | grep -E '^\+.*(function|def|class|const|let|var|async|=>)' | sed 's/^+//' | grep -v '^\s*$' | head -20 || true)"
+          METHODS_ANALYSIS="$(git diff -U0 "$BASE_SHA" "$HEAD_SHA" \
+            | grep -E '^\+.*(function|def|class|const|let|var|async|=>)' \
+            | sed 's/^+//' | grep -v '^\s*$' | head -20 || true)"
           METHOD_COUNT="$(printf '%s\n' "$METHODS_ANALYSIS" | sed '/^\s*$/d' | wc -l | tr -d ' ')"
 
           LANGUAGES="$(git ls-files | grep -v '^docs/' | sed 's/.*\.//' | sort -u | tr '\n' ', ' | sed 's/, $//')"
@@ -183,7 +207,7 @@ jobs:
           printf '%s\n' "$COMMITS" > commits.txt
           printf '%s\n' "$METHODS_ANALYSIS" > methods.txt
 
-          echo "✅ Análise de código concluída: $FILE_COUNT arquivos, $COMMIT_COUNT commits"
+          echo "Análise de código concluída: $FILE_COUNT arquivos, $COMMIT_COUNT commits"
 
       - name: 📝 Extrair seções do PR
         id: extract-sections
@@ -191,7 +215,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          PR_BODY="$(jq -r '.pull_request.body // ""' "$GITHUB_EVENT_PATH")"
+          PR_BODY="$(cat pr_body.txt)"
 
           extract_section() {
             local section="$1"
@@ -203,21 +227,24 @@ jobs:
             ' | sed '/^$/d' | head -20
           }
 
+          CONTEXT="$(extract_section "Contexto" | head -10)"
           HOW_TO_VALIDATE="$(extract_section "Como validar" | head -10)"
           IMPACT="$(extract_section "Impacto" | head -10)"
           ROLLBACK="$(extract_section "Rollback" | head -10)"
 
-          [ -z "$HOW_TO_VALIDATE" ] && HOW_TO_VALIDATE="*Nenhum roteiro de validação fornecido. Recomenda-se adicionar casos de teste.*"
-          [ -z "$IMPACT" ] && IMPACT="*Impacto não descrito. Favor documentar o impacto desta mudança.*"
-          [ -z "$ROLLBACK" ] && ROLLBACK="*Estratégia de rollback não documentada. Recomenda-se definir plano de reversão.*"
+          [ -z "$CONTEXT" ] && CONTEXT="*Context not provided. Add a non-technical summary for stakeholders.*"
+          [ -z "$HOW_TO_VALIDATE" ] && HOW_TO_VALIDATE="*No validation steps provided. Add test coverage guidance.*"
+          [ -z "$IMPACT" ] && IMPACT="*Impact not described. Please document business impact.*"
+          [ -z "$ROLLBACK" ] && ROLLBACK="*Rollback plan not documented. Define a rollback strategy.*"
 
+          printf '%s\n' "$CONTEXT" > context.txt
           printf '%s\n' "$HOW_TO_VALIDATE" > how_to_validate.txt
           printf '%s\n' "$IMPACT" > impact.txt
           printf '%s\n' "$ROLLBACK" > rollback.txt
 
-          echo "✅ Seções extraídas com sucesso"
+          echo "Seções extraídas com sucesso"
 
-      - name: 🎨 Gerar documentação markdown
+      - name: Gerar documentação markdown
         shell: bash
         run: |
           set -euo pipefail
@@ -231,12 +258,13 @@ jobs:
           BASE_SHA="${{ steps.meta.outputs.base_sha }}"
           HEAD_SHA="${{ steps.meta.outputs.head_sha }}"
 
-          PR_TITLE="$(jq -r '.pull_request.title // ""' "$GITHUB_EVENT_PATH")"
+          PR_TITLE="$(cat pr_title.txt)"
 
           DOC_DIR="docs/releases/$YEAR/$MONTH"
           mkdir -p "$DOC_DIR"
           DOC_FILE="$DOC_DIR/${TICKET}.md"
 
+          CONTEXT="$(cat context.txt)"
           HOW_TO_VALIDATE="$(cat how_to_validate.txt)"
           IMPACT="$(cat impact.txt)"
           ROLLBACK="$(cat rollback.txt)"
@@ -253,80 +281,80 @@ jobs:
           FILES_FORMATTED="$(echo "$CHANGED_FILES" | jq -r '.[]' | sed 's/^/- 📄 /')"
           [ -z "$(echo "$FILES_FORMATTED" | tr -d '[:space:]')" ] && FILES_FORMATTED="- Nenhum arquivo alterado"
 
-          cat > "$DOC_FILE" << EOF
-          # $TICKET
+          cat > "$DOC_FILE" <<- EOF
+          	# $TICKET
+          
+          	## 📦 Release $NEW_VERSION
+          
+          	**Data:** $DATE  
+          	**Autor:** ${{ github.actor }}  
+          	**Aprovadores:** ${{ steps.reviews.outputs.approved_by_csv }}  
+          	**Pull Request:** [#${{ steps.pr.outputs.number }}](${{ steps.pr.outputs.url }})
+          
+          	---
+          
+          	## 📋 Resumo da Release
+          
+          	**Título:** $PR_TITLE
+          
+          	### Arquivos Alterados (${{ steps.code-analysis.outputs.file_count }})
+          
+          	$FILES_FORMATTED
+          
+          	### Estatísticas de Código
+          
+          	- **Commits:** ${{ steps.code-analysis.outputs.commit_count }}
+          	- **Métodos/Funções:** ${{ steps.code-analysis.outputs.method_count }}
+          	- **Linguagens:** ${{ steps.code-analysis.outputs.languages }}
+          	- **Resumo:** ${{ steps.code-analysis.outputs.diff_stats }}
+          
+          	---
+          
+          	## 🔍 Como Validar
+          
+          	$HOW_TO_VALIDATE
+          
+          	---
+          
+          	## 💥 Impacto
+          
+          	$IMPACT
+          
+          	---
+          
+          	## ↩️ Rollback
+          
+          	$ROLLBACK
+          
+          	---
+          
+          	## 🔧 Detalhes Técnicos
+          
+          	### Commits
+          
+          	$COMMITS_FORMATTED
+          
+          	### Métodos/Funções Modificadas
+          
+          	$METHODS_FORMATTED
+          
+          	---
+          
+          	## 🔗 Links Úteis
+          
+          	- **Comparação:** https://github.com/$REPO/compare/$BASE_SHA...$HEAD_SHA
+          	- **Commit Base:** https://github.com/$REPO/commit/$BASE_SHA
+          	- **Commit Head:** https://github.com/$REPO/commit/$HEAD_SHA
+          	- **Versão Anterior:** ${{ steps.meta.outputs.prev_version }}
+          
+          	---
+          
+            *Documentação gerada automaticamente em $DATE*
+            EOF
 
-          ## 📦 Release $NEW_VERSION
+          echo "Documentação gerada: $DOC_FILE"
 
-          **Data:** $DATE  
-          **Autor:** ${{ github.actor }}  
-          **Aprovadores:** ${{ steps.reviews.outputs.approved_by_csv }}  
-          **Pull Request:** [#${{ github.event.pull_request.number }}](${{ github.event.pull_request.html_url }})
-
-          ---
-
-          ## 📋 Resumo da Release
-
-          **Título:** $PR_TITLE
-
-          ### Arquivos Alterados (${{ steps.code-analysis.outputs.file_count }})
-
-          $FILES_FORMATTED
-
-          ### Estatísticas de Código
-
-          - **Commits:** ${{ steps.code-analysis.outputs.commit_count }}
-          - **Métodos/Funções:** ${{ steps.code-analysis.outputs.method_count }}
-          - **Linguagens:** ${{ steps.code-analysis.outputs.languages }}
-          - **Resumo:** ${{ steps.code-analysis.outputs.diff_stats }}
-
-          ---
-
-          ## 🔍 Como Validar
-
-          $HOW_TO_VALIDATE
-
-          ---
-
-          ## 💥 Impacto
-
-          $IMPACT
-
-          ---
-
-          ## ↩️ Rollback
-
-          $ROLLBACK
-
-          ---
-
-          ## 🔧 Detalhes Técnicos
-
-          ### Commits
-
-          $COMMITS_FORMATTED
-
-          ### Métodos/Funções Modificadas
-
-          $METHODS_FORMATTED
-
-          ---
-
-          ## 🔗 Links Úteis
-
-          - **Comparação:** [\`$BASE_SHA...$HEAD_SHA\`](https://github.com/$REPO/compare/$BASE_SHA...$HEAD_SHA)
-          - **Commit Base:** [\`$BASE_SHA\`](https://github.com/$REPO/commit/$BASE_SHA)
-          - **Commit Head:** [\`$HEAD_SHA\`](https://github.com/$REPO/commit/$HEAD_SHA)
-          - **Versão Anterior:** ${{ steps.meta.outputs.prev_version }}
-
-          ---
-
-          *Documentação gerada automaticamente em $DATE*
-          EOF
-
-          echo "✅ Documentação gerada: $DOC_FILE"
-
-      - name: 📚 Atualizar CHANGELOG
+      - name: Atualizar CHANGELOG
         shell: bash
         run: |
           set -euo pipefail
@@ -337,8 +365,10 @@ jobs:
           REPO="${{ steps.meta.outputs.repo }}"
           BASE_SHA="${{ steps.meta.outputs.base_sha }}"
           HEAD_SHA="${{ steps.meta.outputs.head_sha }}"
-          PR_NUMBER="${{ github.event.pull_request.number }}"
-          PR_TITLE="$(jq -r '.pull_request.title // ""' "$GITHUB_EVENT_PATH")"
+
+          PR_NUMBER="${{ steps.pr.outputs.number }}"
+          PR_URL="${{ steps.pr.outputs.url }}"
+          PR_TITLE="$(cat pr_title.txt)"
 
           if [ ! -f CHANGELOG.md ]; then
             {
@@ -372,17 +402,21 @@ jobs:
             echo "- Aprovadores: ${{ steps.reviews.outputs.approved_by_csv }}"
             echo ""
             echo "#### 🔗 Links"
-            echo "- Pull Request: [#$PR_NUMBER](${{ github.event.pull_request.html_url }})"
+            echo "- Pull Request: [#$PR_NUMBER]($PR_URL)"
             echo "- Comparação: [$BASE_SHA...$HEAD_SHA](https://github.com/$REPO/compare/$BASE_SHA...$HEAD_SHA)"
             echo ""
           } > "$TEMP_ENTRY"
 
-          # Insere logo após a primeira linha (# Changelog)
-          awk -v entry_file="$TEMP_ENTRY" 'NR==1 {print; print ""; system("cat " entry_file); next} {print}' CHANGELOG.md > CHANGELOG.tmp
+          awk -v entry_file="$TEMP_ENTRY" '
+            NR==1 {print; print ""; system("cat " entry_file); next}
+            {print}
+          ' CHANGELOG.md > CHANGELOG.tmp
+
           mv CHANGELOG.tmp CHANGELOG.md
           rm -f "$TEMP_ENTRY"
 
-          echo "✅ CHANGELOG atualizado com versão $NEW_VERSION"
+          echo "CHANGELOG atualizado com versão $NEW_VERSION"
+
       - name: 🔄 Gerar JSON de codeChanges
         id: code-changes
         shell: bash
@@ -392,7 +426,7 @@ jobs:
           export BASE_SHA="${{ steps.meta.outputs.base_sha }}"
           export HEAD_SHA="${{ steps.meta.outputs.head_sha }}"
 
-          python3 - << 'PYTHON_SCRIPT' > code_changes.json
+          python3 - <<'PYTHON_SCRIPT' > code_changes.json
           import json
           import os
           import re
@@ -402,10 +436,7 @@ jobs:
           head_sha = os.environ.get("HEAD_SHA")
 
           try:
-              diff = subprocess.check_output(
-                  ["git", "diff", "-U0", base_sha, head_sha],
-                  text=True
-              )
+              diff = subprocess.check_output(["git", "diff", "-U0", base_sha, head_sha], text=True)
           except Exception:
               diff = ""
 
@@ -464,16 +495,17 @@ jobs:
                   })
                   current_line += 1
 
-          changes = changes[:50]
-          print(json.dumps(changes, ensure_ascii=False))
+          print(json.dumps(changes[:50], ensure_ascii=False))
           PYTHON_SCRIPT
 
-          echo "✅ Code changes JSON gerado"
+              echo "✅ Code changes JSON gerado"
 
-      - name: 📊 Gerar releases.json para front-end
+
+      - name: Gerar releases.json para front-end
         shell: bash
         run: |
           set -euo pipefail
+
           NEW_VERSION="${{ steps.meta.outputs.new_version }}"
           DATE="${{ steps.meta.outputs.date }}"
           TIMESTAMP="${{ steps.meta.outputs.timestamp }}"
@@ -488,6 +520,9 @@ jobs:
           APPROVED_BY_JSON='${{ steps.reviews.outputs.approved_by_json }}'
           CHANGED_FILES_JSON='${{ steps.code-analysis.outputs.changed_files_json }}'
           CODE_CHANGES_JSON="$(jq -c . code_changes.json)"
+          CONTEXT_TEXT="$(cat context.txt)"
+          IMPACT_TEXT="$(cat impact.txt)"
+          VALIDATE_TEXT="$(cat how_to_validate.txt)"
 
           FILE_LINKS_JSON="$(echo "$CHANGED_FILES_JSON" | jq -c --arg repo "$REPO" --arg sha "$HEAD_SHA" '
             map({ path: ., url: ("https://github.com/" + $repo + "/blob/" + $sha + "/" + .) })
@@ -512,9 +547,9 @@ jobs:
             --arg ticket "$TICKET" \
             --arg author "${{ github.actor }}" \
             --argjson approvedBy "$APPROVED_BY_JSON" \
-            --arg prNumber "${{ github.event.pull_request.number }}" \
-            --arg prTitle "$(jq -r '.pull_request.title // ""' "$GITHUB_EVENT_PATH")" \
-            --arg prUrl "${{ github.event.pull_request.html_url }}" \
+            --arg prNumber "${{ steps.pr.outputs.number }}" \
+            --arg prTitle "$(cat pr_title.txt)" \
+            --arg prUrl "${{ steps.pr.outputs.url }}" \
             --arg baseSha "$BASE_SHA" \
             --arg headSha "$HEAD_SHA" \
             --arg compareUrl "https://github.com/$REPO/compare/$BASE_SHA...$HEAD_SHA" \
@@ -523,6 +558,9 @@ jobs:
             --arg changeLogUrl "$CHANGELOG_URL" \
             --arg releaseDocPath "$DOC_PATH" \
             --arg releaseDocUrl "$DOC_URL" \
+            --arg prContext "$CONTEXT_TEXT" \
+            --arg impact "$IMPACT_TEXT" \
+            --arg howToValidate "$VALIDATE_TEXT" \
             --argjson changedFiles "$CHANGED_FILES_JSON" \
             --argjson fileLinks "$FILE_LINKS_JSON" \
             --argjson codeChanges "$CODE_CHANGES_JSON" \
@@ -536,6 +574,9 @@ jobs:
               ticket: $ticket,
               author: $author,
               approvedBy: $approvedBy,
+              context: $prContext,
+              impact: $impact,
+              howToValidate: $howToValidate,
               pr: { number: $prNumber, title: $prTitle, url: $prUrl },
               commits: { base: $baseSha, head: $headSha, compareUrl: $compareUrl, previousVersion: $previousVersion },
               docs: { changeLogPath: $changeLogPath, changeLogUrl: $changeLogUrl, releaseDocPath: $releaseDocPath, releaseDocUrl: $releaseDocUrl },
@@ -554,9 +595,9 @@ jobs:
           ' "$RELEASES_FILE" > "$TMP_FILE"
 
           mv "$TMP_FILE" "$RELEASES_FILE"
-          echo "✅ releases.json atualizado com versão $NEW_VERSION"
+          echo "releases.json atualizado com versão $NEW_VERSION"
 
-      - name: 📱 Gerar preview da release (opcional)
+      - name: Gerar preview da release (opcional)
         if: github.event.pull_request.draft == false
         shell: bash
         run: |
@@ -564,28 +605,27 @@ jobs:
 
           PREVIEW_FILE="$(mktemp)"
 
-          cat > "$PREVIEW_FILE" << EOF
-          ## 🚀 Release ${{ steps.meta.outputs.new_version }} - Preview
-
-          | Item | Detalhe |
-          |------|---------|
-          | Versão | ${{ steps.meta.outputs.new_version }} |
-          | Ticket | ${{ steps.validate-ticket.outputs.ticket }} |
-          | Autor | ${{ github.actor }} |
-          | Aprovadores | ${{ steps.reviews.outputs.approved_by_csv }} |
-          | Arquivos | ${{ steps.code-analysis.outputs.file_count }} |
-          | Commits | ${{ steps.code-analysis.outputs.commit_count }} |
-
-          **📊 Documentação Gerada**
-          - 📄 Documento: https://github.com/${{ github.repository }}/blob/${{ steps.meta.outputs.head_sha }}/docs/releases/${{ steps.meta.outputs.year }}/${{ steps.meta.outputs.month }}/${{ steps.validate-ticket.outputs.ticket }}.md
-          - 📚 CHANGELOG: https://github.com/${{ github.repository }}/blob/${{ steps.meta.outputs.head_sha }}/CHANGELOG.md
-          - 🗂️ Releases: https://github.com/${{ github.repository }}/blob/${{ steps.meta.outputs.head_sha }}/docs/releases.json
-          EOF
+          cat > "$PREVIEW_FILE" <<- EOF
+          	## 🚀 Release ${{ steps.meta.outputs.new_version }} - Preview
+          
+          	| Item | Detalhe |
+          	|------|---------|
+          	| Versão | ${{ steps.meta.outputs.new_version }} |
+          	| Ticket | ${{ steps.validate-ticket.outputs.ticket }} |
+          	| Autor | ${{ github.actor }} |
+          	| Aprovadores | ${{ steps.reviews.outputs.approved_by_csv }} |
+          	| Arquivos | ${{ steps.code-analysis.outputs.file_count }} |
+          	| Commits | ${{ steps.code-analysis.outputs.commit_count }} |
+          
+          	**📊 Documentação Gerada**
+          	- 📄 Documento: https://github.com/${{ github.repository }}/blob/${{ steps.meta.outputs.head_sha }}/docs/releases/${{ steps.meta.outputs.year }}/${{ steps.meta.outputs.month }}/${{ steps.validate-ticket.outputs.ticket }}.md
+          	- 📚 CHANGELOG: https://github.com/${{ github.repository }}/blob/${{ steps.meta.outputs.head_sha }}/CHANGELOG.md
+          	- 🗂️ Releases: https://github.com/${{ github.repository }}/blob/${{ steps.meta.outputs.head_sha }}/docs/releases.json
+          	EOF
 
           echo "✅ Preview gerado"
-          # Se quiser comentar no PR, use gh CLI e permissões adequadas.
 
-      - name: ✅ Commit e push das mudanças
+      - name: Commit e push das mudanças
         shell: bash
         run: |
           set -euo pipefail
@@ -596,7 +636,7 @@ jobs:
           git add docs/releases/ docs/releases.json CHANGELOG.md
 
           if git diff --staged --quiet; then
-            echo "ℹ️ Nenhuma mudança para commitar"
+            echo "Nenhuma mudança para commitar"
             exit 0
           fi
 
@@ -605,16 +645,16 @@ jobs:
           git pull --rebase origin "${{ github.event.pull_request.head.ref }}"
           git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
 
-          echo "✅ Mudanças commitadas e enviadas"
+          echo "Mudanças commitadas e enviadas"
 
-      - name: 📢 Sumário da execução
+      - name: Sumário da execução
         if: always()
         shell: bash
         run: |
           set -euo pipefail
 
           {
-            echo "## 📊 Resumo da Documentação Gerada"
+            echo "## Resumo da Documentação Gerada"
             echo ""
             echo "| Item | Detalhe |"
             echo "|------|---------|"

@@ -1,5 +1,25 @@
 # Changelog
 
+## [v0.1.2] - 2026-02-13
+
+### GLPI-0004: Padroniza e corrige geração automática de documentação de release para GitHub Pages
+
+#### 🎫 Ticket
+- GLPI-0004
+
+#### 📊 Estatísticas
+- Arquivos alterados: 5
+- Commits: 10
+- Métodos/Funções: 20
+
+#### ✅ Aprovações
+- Aprovadores: Aguardando aprovações
+
+#### 🔗 Links
+- Pull Request: [#10](https://github.com/brenokf/SmartSimulate/pull/10)
+- Comparação: [02e4335e42bbb577113ff13402f84e4910aa316a...9d81b2e0df08deaa37ee5128c3541de499fe392f](https://github.com/brenokf/SmartSimulate/compare/02e4335e42bbb577113ff13402f84e4910aa316a...9d81b2e0df08deaa37ee5128c3541de499fe392f)
+
+
 ## [v0.1.1] - 2026-02-13
 
 ### GLPI-0003: Padroniza documentação de mudanças no changelog and tickets
