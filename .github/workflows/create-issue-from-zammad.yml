@@ -1,0 +1,43 @@
+name: Create issue from Zammad
+
+on:
+  workflow_dispatch:
+    inputs:
+      ticket_id:
+        description: "ID do ticket no Zammad"
+        required: true
+        type: string
+      title:
+        description: "Título da issue"
+        required: true
+        type: string
+      body:
+        description: "Descrição da issue"
+        required: true
+        type: string
+      labels:
+        description: "Labels separadas por vírgula"
+        required: false
+        default: "bug"
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  create-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create GitHub issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TICKET_ID: ${{ inputs.ticket_id }}
+          ISSUE_TITLE: ${{ inputs.title }}
+          ISSUE_BODY: ${{ inputs.body }}
+          ISSUE_LABELS: ${{ inputs.labels }}
+        run: |
+          gh issue create \
+            --title "$ISSUE_TITLE" \
+            --body "$(printf 'Origem: Zammad ticket #%s\n\n%s' "$TICKET_ID" "$ISSUE_BODY")" \
+            --label "$ISSUE_LABELS"
