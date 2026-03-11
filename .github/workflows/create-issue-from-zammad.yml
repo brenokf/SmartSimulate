@@ -38,6 +38,7 @@ jobs:
           ISSUE_LABELS: ${{ inputs.labels }}
         run: |
           gh issue create \
+            --repo ${{ github.repository }} \
             --title "$ISSUE_TITLE" \
             --body "$(printf 'Origem: Zammad ticket #%s\n\n%s' "$TICKET_ID" "$ISSUE_BODY")" \
             --label "$ISSUE_LABELS"
