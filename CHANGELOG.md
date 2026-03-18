@@ -1,5 +1,25 @@
 # Changelog
 
+## [v0.1.3] - 2026-03-18
+
+### GLPI-0010 - Update README with comprehensive setup instructions and project…
+
+#### 🎫 Ticket
+- GLPI-0010
+
+#### 📊 Estatísticas
+- Arquivos alterados: 1
+- Commits: 1
+- Métodos/Funções: 3
+
+#### ✅ Aprovações
+- Aprovadores: Aguardando aprovações
+
+#### 🔗 Links
+- Pull Request: [#20](https://github.com/brenokf/SmartSimulate/pull/20)
+- Comparação: [6e9a01f234f992d4fd56d15bf778ac7d07f45fcd...b2dae9428bc315dedb161e6f98c16da5b697144e](https://github.com/brenokf/SmartSimulate/compare/6e9a01f234f992d4fd56d15bf778ac7d07f45fcd...b2dae9428bc315dedb161e6f98c16da5b697144e)
+
+
 ## [v0.1.2] - 2026-02-13
 
 ### GLPI-0004: Padroniza e corrige geração automática de documentação de release para GitHub Pages

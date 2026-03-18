@@ -1,6 +1,500 @@
 {
   "releases": [
     {
+      "version": "v0.1.3",
+      "date": "2026-03-18",
+      "timestamp": "1773847856",
+      "ticket": "GLPI-0010",
+      "author": "brenokf",
+      "approvedBy": [],
+      "context": "*Context not provided. Add a non-technical summary for stakeholders.*",
+      "impact": "Impacto funcional: **baixo** (mudança documental).  \r\nRisco: **baixo**, sem alteração de lógica da aplicação.\r\n\r",
+      "howToValidate": "1. Abrir o README.md e revisar estrutura, navegação e seções.\r\n2. Confirmar que instruções de setup (`npm install`, .env.local, `npm run dev`) estão corretas.\r\n3. Verificar se padrão de contribuição/branch está claro para novos PRs.\r\n\r",
+      "pr": {
+        "number": "20",
+        "title": "GLPI-0010 - Update README with comprehensive setup instructions and project…",
+        "url": "https://github.com/brenokf/SmartSimulate/pull/20"
+      },
+      "commits": {
+        "base": "6e9a01f234f992d4fd56d15bf778ac7d07f45fcd",
+        "head": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+        "compareUrl": "https://github.com/brenokf/SmartSimulate/compare/6e9a01f234f992d4fd56d15bf778ac7d07f45fcd...b2dae9428bc315dedb161e6f98c16da5b697144e",
+        "previousVersion": "v0.1.2"
+      },
+      "docs": {
+        "changeLogPath": "CHANGELOG.md",
+        "changeLogUrl": "https://github.com/brenokf/SmartSimulate/blob/b2dae9428bc315dedb161e6f98c16da5b697144e/CHANGELOG.md",
+        "releaseDocPath": "docs/releases/2026/03/GLPI-0010.md",
+        "releaseDocUrl": "https://github.com/brenokf/SmartSimulate/blob/b2dae9428bc315dedb161e6f98c16da5b697144e/docs/releases/2026/03/GLPI-0010.md"
+      },
+      "stats": {
+        "fileCount": "1",
+        "commitCount": "1",
+        "methodCount": "3"
+      },
+      "changedFiles": [
+        "README.md"
+      ],
+      "fileLinks": [
+        {
+          "path": "README.md",
+          "url": "https://github.com/brenokf/SmartSimulate/blob/b2dae9428bc315dedb161e6f98c16da5b697144e/README.md"
+        }
+      ],
+      "codeChanges": [
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 2,
+          "lineEnd": 2,
+          "code": "<h1>🚀 SmartSimulate</h1>",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 3,
+          "lineEnd": 3,
+          "code": "<p><strong>Simulações inteligentes com IA, prontas para desenvolvimento local e deploy rápido.</strong></p>",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 7,
+          "lineEnd": 7,
+          "code": "---",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 9,
+          "lineEnd": 9,
+          "code": "## 📌 Visão geral",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 11,
+          "lineEnd": 11,
+          "code": "O **SmartSimulate** é uma aplicação front-end integrada com IA para execução de simulações, análises e interações inteligentes com foco em produtividade e experiência moderna de uso.",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 13,
+          "lineEnd": 13,
+          "code": "Este repositório contém tudo o que você precisa para:",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 15,
+          "lineEnd": 15,
+          "code": "- rodar o app localmente;",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 16,
+          "lineEnd": 16,
+          "code": "- configurar o acesso à API Gemini;",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 17,
+          "lineEnd": 17,
+          "code": "- evoluir o projeto com fluxo de branch e CI.",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 19,
+          "lineEnd": 19,
+          "code": "---",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 21,
+          "lineEnd": 21,
+          "code": "## ✨ Principais recursos",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 23,
+          "lineEnd": 23,
+          "code": "- Interface orientada a simulação com IA",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 24,
+          "lineEnd": 24,
+          "code": "- Integração com **Gemini API**",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 25,
+          "lineEnd": 25,
+          "code": "- Execução local rápida para desenvolvimento",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 26,
+          "lineEnd": 26,
+          "code": "- Estrutura pronta para colaboração em equipe",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 27,
+          "lineEnd": 27,
+          "code": "- Base preparada para automações com GitHub Actions",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 29,
+          "lineEnd": 29,
+          "code": "---",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 31,
+          "lineEnd": 31,
+          "code": "## 🧱 Pré-requisitos",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 33,
+          "lineEnd": 33,
+          "code": "Antes de iniciar, garanta que você tenha instalado:",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 35,
+          "lineEnd": 35,
+          "code": "- **Node.js** (recomendado: versão LTS)",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 36,
+          "lineEnd": 36,
+          "code": "- **npm** (normalmente já vem com Node.js)",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 38,
+          "lineEnd": 38,
+          "code": "---",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 40,
+          "lineEnd": 40,
+          "code": "## ⚙️ Configuração local",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 42,
+          "lineEnd": 42,
+          "code": "### 1) Instale as dependências",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 44,
+          "lineEnd": 44,
+          "code": "```bash",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 45,
+          "lineEnd": 45,
+          "code": "npm install",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 46,
+          "lineEnd": 46,
+          "code": "```",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 48,
+          "lineEnd": 48,
+          "code": "### 2) Configure as variáveis de ambiente",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 50,
+          "lineEnd": 50,
+          "code": "Crie (ou edite) o arquivo `.env.local` na raiz do projeto e adicione:",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 52,
+          "lineEnd": 52,
+          "code": "```env",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 53,
+          "lineEnd": 53,
+          "code": "GEMINI_API_KEY=sua_chave_aqui",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 54,
+          "lineEnd": 54,
+          "code": "```",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 56,
+          "lineEnd": 56,
+          "code": "> 🔐 Nunca commite chaves reais em repositórios públicos.",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 58,
+          "lineEnd": 58,
+          "code": "### 3) Rode o projeto",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 60,
+          "lineEnd": 60,
+          "code": "```bash",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 61,
+          "lineEnd": 61,
+          "code": "npm run dev",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 62,
+          "lineEnd": 62,
+          "code": "```",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 64,
+          "lineEnd": 64,
+          "code": "---",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 66,
+          "lineEnd": 66,
+          "code": "## 🧪 Scripts úteis",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 68,
+          "lineEnd": 68,
+          "code": "| Script          | Descrição                                 |",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 69,
+          "lineEnd": 69,
+          "code": "|----------------|--------------------------------------------|",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 70,
+          "lineEnd": 70,
+          "code": "| `npm run dev`  | Inicia o ambiente de desenvolvimento local |",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 72,
+          "lineEnd": 72,
+          "code": "> Adicione aqui outros scripts do projeto conforme evolução (`build`, `test`, `lint`, etc.).",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 74,
+          "lineEnd": 74,
+          "code": "---",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 76,
+          "lineEnd": 76,
+          "code": "## 🌿 Estratégia de branch (sugestão)",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 78,
+          "lineEnd": 78,
+          "code": "Padrão recomendado de nome para branches de correção:",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 80,
+          "lineEnd": 80,
+          "code": "```bash",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 81,
+          "lineEnd": 81,
+          "code": "bugfix/glpi-1234-demo",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 82,
+          "lineEnd": 82,
+          "code": "```",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        },
+        {
+          "type": "Alteração",
+          "file": "README.md",
+          "lineStart": 84,
+          "lineEnd": 84,
+          "code": "Fluxo sugerido:",
+          "commit": "b2dae9428bc315dedb161e6f98c16da5b697144e",
+          "language": "md"
+        }
+      ]
+    },
+    {
       "version": "v0.1.2",
       "date": "2026-02-13",
       "timestamp": "1771016221",
@@ -1027,7 +1521,7 @@
     }
   ],
   "metadata": {
-    "lastUpdated": "1771016221",
-    "totalReleases": 2
+    "lastUpdated": "1773847856",
+    "totalReleases": 3
   }
 }
